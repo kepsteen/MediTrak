@@ -1,34 +1,22 @@
-set client_min_messages to warning;
-
--- DANGER: this is NOT how to do it in the real world.
--- `drop schema` INSTANTLY ERASES EVERYTHING.
-drop schema "public" cascade;
-
-create schema "public";
-
-CREATE TYPE timeOfDay AS ENUM ('Morning', 'Noon', 'Evening', 'Bedtime');
-CREATE TYPE dayOfWeek AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-CREATE TYPE userRole AS ENUM ('Patient', 'Caregiver');
-
 CREATE TABLE "medicationSchedules" (
   "id" serial PRIMARY KEY,
   "medicationId" integer,
   "timesPerDay" integer,
-  "timeOfDay" timeOfDay,
+  "timeOfDay" ENUM(Morning,Noon,Evening,Bedtime),
   "userId" integer
 );
 
 CREATE TABLE "scheduleDays" (
   "id" serial PRIMARY KEY,
   "scheduleId" integer,
-  "dayOfWeek" dayOfWeek
+  "dayOfWeek" enum(Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday)
 );
 
 CREATE TABLE "users" (
   "id" serial PRIMARY KEY,
   "username" text,
   "email" text UNIQUE,
-  "role" userRole,
+  "role" enum(Patient,Caregiver),
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
