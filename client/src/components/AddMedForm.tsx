@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from './ui/textarea';
+import { useToast } from './ui/use-toast';
 
 // Todo: Add messages for invalid inputs
 const formSchema = z
@@ -58,15 +59,22 @@ export function AddMedForm() {
       remaining: '',
     },
   });
+  const { toast } = useToast();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, userId: 1 };
+    for (const key in newMedication) {
+      if (newMedication[key] === '') newMedication[key] = null;
+    }
     const response = await fetch('/api/medications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newMedication),
     });
     if (!response.ok) throw new Error(`Response status: ${response.status}`);
+    toast({
+      title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
+    });
     form.reset({
       name: '',
       dosage: '',
@@ -194,7 +202,12 @@ export function AddMedForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="col-span-2">
+          <Button
+            type="submit"
+            className="col-span-2"
+            onClick={() =>
+              toast({ title: 'Atovorvastatin 500mg Tablet Added' })
+            }>
             Submit
           </Button>
         </form>

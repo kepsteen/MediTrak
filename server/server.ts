@@ -20,22 +20,22 @@ type Medication = {
 function validateMedication(reqBody: unknown): void {
   const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
     reqBody as Medication;
-  if (!name) throw new ClientError(400, 'no name provided');
-  if (!dosage) throw new ClientError(400, 'no dosage provided');
-  if (!form) throw new ClientError(400, 'no form provided');
-  if (!notes) throw new ClientError(400, 'no notes provided');
-  if (!prescriber) throw new ClientError(400, 'no prescriber provided');
-  if (!amount) throw new ClientError(400, 'no amount provided');
-  if (!remaining) throw new ClientError(400, 'no remaining provided');
-  if (!userId) throw new ClientError(400, 'no userId provided');
-  if (typeof amount !== 'number') {
+
+  if (name === undefined) throw new ClientError(400, 'no name provided');
+  if (dosage === undefined) throw new ClientError(400, 'no dosage provided');
+  if (form === undefined) throw new ClientError(400, 'no form provided');
+  if (notes === undefined) throw new ClientError(400, 'no notes provided');
+  if (prescriber === undefined)
+    throw new ClientError(400, 'no prescriber provided');
+  if (amount === undefined) throw new ClientError(400, 'no amount provided');
+  if (remaining === undefined)
+    throw new ClientError(400, 'no remaining provided');
+  if (userId === undefined) throw new ClientError(400, 'no userId provided');
+  if (!Number.isInteger(+amount) && amount !== null) {
     throw new ClientError(400, `amount ${amount} is not a number`);
   }
-  if (typeof remaining !== 'number') {
-    throw new ClientError(400, `amount ${amount} is not a number`);
-  }
-  if (remaining > amount) {
-    throw new ClientError(400, `amount must be greater than remaining`);
+  if (!Number.isInteger(+remaining) && remaining !== null) {
+    throw new ClientError(400, `amount ${remaining} is not a number`);
   }
 }
 
@@ -59,27 +59,9 @@ app.use(express.json());
 
 app.post('/api/medications', async (req, res, next) => {
   try {
-    console.log('req.body', req.body);
     validateMedication(req.body);
     const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
       req.body;
-
-    // const term = `${name} ${dosage}`;
-    // // const response = await fetch(
-    // //   `https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=${encodeURIComponent(
-    // //     term
-    // //   )}&maxEntries=1&option=0`,
-    // //   {
-    // //     method: 'GET',
-    // //     headers: {
-    // //       'Content-Type': 'application/json',
-    // //     },
-    // //   }
-    // // );
-    // // if (!response.ok) throw new Error(`Response status ${response.status}`);
-    // // const result = await response.json();
-    // // console.log('result', result);
-
     const sql = `
       insert into "medications" ("rxcui","name","dosage","form","notes","prescriber","amount","remaining","userId" )
         values($1, $2, $3, $4, $5, $6, $7, $8, $9)

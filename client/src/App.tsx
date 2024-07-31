@@ -3,6 +3,7 @@ import './Reset.css';
 import { Header } from './components/Header';
 import { LandingPage } from './pages/LandingPage';
 import { AddMedications } from './pages/AddMedications';
+import { Toaster } from './components/ui/toaster';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Route path="add-medications" element={<AddMedications />} />
         </Route>
       </Routes>
+      <Toaster />
     </>
   );
 }
