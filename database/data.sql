@@ -3,5 +3,9 @@
 
 -- EXAMPLE:
 
+
 insert into "users" ("username", "email", "role")
-  values ('cody', 'codyepstein@gmail.com', 'Patient');
+  values ('test', 'test@test.com', 'Patient');
+
+insert into "rxNormConcepts" ("rxcui", "name")
+  values (1, 'zocor 10 mg');

@@ -74,8 +74,6 @@ ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" 
 
 ALTER TABLE "scheduleDays" ADD FOREIGN KEY ("scheduleId") REFERENCES "medicationSchedules" ("id");
 
-ALTER TABLE "medications" ADD FOREIGN KEY ("rxcui") REFERENCES "rxNormConcepts" ("rxcui");
-
 ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
 
 ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("patientId") REFERENCES "users" ("id");
