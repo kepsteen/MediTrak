@@ -1,58 +1,78 @@
 import { Pill, UserRound, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Outlet } from 'react-router';
+import { Link } from 'react-router-dom';
 
 export function Header() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setHasScrolled(true);
+      } else {
+        setHasScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   function handleClick() {
     setIsOpen(!isOpen);
   }
   return (
     <>
-      <header className="flex justify-between w-screen px-[5%] mt-4">
-        <div className="logo">
-          <h1 className="h1 text-ruby">
+      <header
+        className={`fixed flex items-center justify-between w-screen px-4 py-4 md:px-10 transition-ease ${
+          hasScrolled && 'bg-lightgray shadow-md'
+        }`}>
+        <Link to="/" className="logo">
+          <h1 className="font-semibold text-ruby logo-text">
             Medi<span className="text-redblack">Trak</span>
           </h1>
-        </div>
+        </Link>
         <button
-          className="relative flex flex-col place-content-center gap-1 w-[3rem] h-[3rem] rounded-full bg-redblack"
+          className={`relative flex flex-col place-content-center gap-1 w-[3rem] h-[3rem] md:w-[4rem] md:h-[4rem] rounded-full bg-redblack transition-ease ${
+            isOpen && 'opacity-0'
+          }`}
           onClick={handleClick}>
-          <div
-            className={`h-[0.25rem] bg-white rounded-md w-7 mx-auto ${
-              isOpen && ' rotate-45 absolute top-5 left-3'
-            }`}></div>
-          <div
-            className={`h-[0.25rem] bg-white rounded-md w-7 mx-auto transition-all delay-75 ease-in-out ${
-              isOpen && 'bg-opacity-0'
-            }`}></div>
-          <div
-            className={`h-[0.25rem] bg-white rounded-md w-7 mx-auto ${
-              isOpen && ' -rotate-45 absolute top-5 left-3'
-            }`}></div>
+          <div className={`menu-div`}></div>
+          <div className={`menu-div`}></div>
+          <div className={`menu-div`}></div>
         </button>
         <nav
           className={`absolute top-0 p-4 text-white transition-all delay-300 ease-in-out bg-redblack rounded-bl-md ${
-            isOpen ? 'right-0' : 'right-[-500px]'
+            isOpen ? 'right-0' : 'right-[-1000px]'
           }`}>
           <button className="w-full" onClick={handleClick}>
-            <X size={48} className="ml-auto" />
+            <X size={48} className="ml-auto hover:text-ruby" />
           </button>
           <ul className="h2">
             <li>
-              <div className="flex gap-2 mb-4 transition-all ease-in-out hover:text-ruby">
-                Medications
-                <Pill />
-              </div>
+              <Link
+                to="/add-medications"
+                className="flex justify-end items-center gap-2 mb-4 transition-ease text-[2rem] hover:text-ruby"
+                onClick={handleClick}>
+                Add Medications
+                <Pill size={32} />
+              </Link>
             </li>
             <li>
-              <div className="flex gap-2 transition-all ease-in-out hover:text-ruby">
-                Profile <UserRound />
-              </div>
+              <span className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
+                Profile <UserRound size={32} />
+              </span>
             </li>
           </ul>
         </nav>
       </header>
+      <div className="bg-gradient"></div>
+      <Outlet />
     </>
   );
 }
