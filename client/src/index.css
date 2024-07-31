@@ -4,46 +4,38 @@
 
 @layer base {
   #root {
-    @apply font-inter;
+    @apply min-h-screen font-inter;
   }
 
-  .h1 {
-    @apply text-[3rem] leading-[3rem] font-bold tracking-tighter;
+  img {
+    @apply w-full h-full;
   }
 
-  .h2 {
-    @apply text-[2.25rem] leading-[2.25rem] font-semibold tracking-tight;
+  .container {
+    @apply w-[80%] mx-auto;
   }
 
-  .h3 {
-    @apply text-[1.5rem] leading-[2rem] tracking-tight;
+  .logo-text {
+    @apply text-[3rem] tracking-tighter md:text-[4rem];
   }
 
-  .h4 {
-    @apply text-[1.25rem] leading-[2rem] tracking-tight;
+  .menu-div {
+    @apply h-[0.25rem] bg-white rounded-md w-7 mx-auto;
   }
 
-  .large {
-    @apply text-[1.125rem] leading-[1.75rem];
+  .transition-ease {
+    @apply transition-all ease-in-out;
   }
 
-  .lead {
-    @apply text-[1.25rem] leading[1.75rem];
+  .bg-gradient {
+    @apply absolute inset-0 bg-bg-gradient -z-10;
   }
 
-  .p {
-    @apply text-[1rem] leading-[1.75rem];
+  .img-sm {
+    @apply w-[300px] h-[300px];
   }
 
-  .p-ui {
-    @apply text-[1rem] leading-[1.5rem];
-  }
-
-  .subtle {
-    @apply text-[0.875rem] leading-[1.25rem];
-  }
-
-  .bg-polygon {
-    @apply;
+  .img-md {
+    @apply w-[350px] h-[350px];
   }
 }
