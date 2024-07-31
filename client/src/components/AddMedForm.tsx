@@ -22,15 +22,28 @@ import {
 import { Textarea } from './ui/textarea';
 
 // Todo: Add messages for invalid inputs
-const formSchema = z.object({
-  name: z.string().min(2).max(50),
-  dosage: z.string().min(2).max(50),
-  form: z.string().min(2).max(50),
-  notes: z.string().optional(),
-  prescriber: z.string().optional(),
-  amount: z.coerce.number().optional(),
-  remaining: z.coerce.number().optional(),
-});
+const formSchema = z
+  .object({
+    name: z.string().min(2).max(50),
+    dosage: z.string().min(1).max(50),
+    form: z.string(),
+    notes: z.string().optional(),
+    prescriber: z.string().optional(),
+    amount: z.coerce.string(),
+    remaining: z.coerce.string(),
+  })
+  .refine(
+    (data) => {
+      if (data.amount && data.remaining) {
+        return parseInt(data.remaining) <= parseInt(data.amount);
+      }
+      return true;
+    },
+    {
+      message: 'Remaining must be less than amount',
+      path: ['remaining'],
+    }
+  );
 
 export function AddMedForm() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,14 +52,30 @@ export function AddMedForm() {
       name: '',
       dosage: '',
       form: 'Tablet',
-      notes: undefined,
-      prescriber: undefined,
-      amount: undefined,
-      remaining: undefined,
+      notes: '',
+      prescriber: '',
+      amount: '',
+      remaining: '',
     },
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const newMedication = { ...values, userId: 1 };
+    const response = await fetch('/api/medications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newMedication),
+    });
+    if (!response.ok) throw new Error(`Response status: ${response.status}`);
+    form.reset({
+      name: '',
+      dosage: '',
+      form: 'Tablet',
+      notes: '',
+      prescriber: '',
+      amount: '',
+      remaining: '',
+    });
   }
   return (
     <>
@@ -63,9 +92,6 @@ export function AddMedForm() {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  This is your public display name.
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -79,9 +105,6 @@ export function AddMedForm() {
                 <FormControl>
                   <Input placeholder="10 mg" {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  This is your public display name.
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -110,8 +133,6 @@ export function AddMedForm() {
                     <SelectItem value="Topical">Topical</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* <FormDescription>
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -130,8 +151,6 @@ export function AddMedForm() {
                     {...field}
                   />
                 </FormControl>
-                {/* <FormDescription>
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -145,9 +164,6 @@ export function AddMedForm() {
                 <FormControl>
                   <Input placeholder="Dr. Smith" {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  This is your public display name.
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -159,11 +175,8 @@ export function AddMedForm() {
               <FormItem>
                 <FormLabel>Doses</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  This is your public display name.
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -177,9 +190,6 @@ export function AddMedForm() {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  This is your public display name.
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
