@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export function LandingPage() {
   return (
@@ -11,14 +12,13 @@ export function LandingPage() {
           <img
             src="/images/pills-in-hand.webp"
             alt=""
-            className="rounded-full"
+            className="rounded-full shadow-xl"
           />
         </div>
-        <Button size={'lg'} className="text-[1.5rem]">
-          Start Tracking now
+        <Button asChild size={'lg'} className="text-[1.5rem] shadow-sm">
+          <Link to="/add-medications">Start Tracking now</Link>
         </Button>
       </section>
-      <div className="bg-gradient"></div>
     </>
   );
 }

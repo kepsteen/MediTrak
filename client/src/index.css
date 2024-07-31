@@ -12,7 +12,7 @@
   }
 
   .container {
-    @apply w-[80%] mx-auto;
+    @apply w-[80%] mx-auto max-w-[1000px];
   }
 
   .logo-text {
@@ -20,7 +20,7 @@
   }
 
   .menu-div {
-    @apply h-[0.25rem] bg-white rounded-md w-7 mx-auto;
+    @apply h-[0.25rem] bg-white rounded-md w-[26px] mx-auto;
   }
 
   .transition-ease {
@@ -28,7 +28,7 @@
   }
 
   .bg-gradient {
-    @apply absolute inset-0 bg-bg-gradient -z-10;
+    @apply fixed inset-0 bg-bg-gradient -z-10;
   }
 
   .img-sm {
