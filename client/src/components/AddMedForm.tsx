@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from './ui/textarea';
+import { useToast } from './ui/use-toast';
+import { useNavigate } from 'react-router';
 
 // Todo: Add messages for invalid inputs
 const formSchema = z
@@ -58,15 +60,24 @@ export function AddMedForm() {
       remaining: '',
     },
   });
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, userId: 1 };
+    for (const key in newMedication) {
+      if (newMedication[key] === '') newMedication[key] = null;
+    }
     const response = await fetch('/api/medications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newMedication),
     });
     if (!response.ok) throw new Error(`Response status: ${response.status}`);
+    navigate('/medications');
+    toast({
+      title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
+    });
     form.reset({
       name: '',
       dosage: '',

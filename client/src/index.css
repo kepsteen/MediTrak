@@ -38,4 +38,16 @@
   .img-md {
     @apply w-[350px] h-[350px];
   }
+
+  .collapsible-content {
+    @apply overflow-hidden;
+  }
+
+  .collapsible-content[data-state='open'] {
+    @apply animate-slide-down;
+  }
+
+  .collapsible-content[data-state='closed'] {
+    @apply animate-slide-up;
+  }
 }
