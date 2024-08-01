@@ -105,7 +105,7 @@ export function MedicationList() {
     <>
       <section className="container pt-[110px] pb-[40px] ">
         <div className="flex flex-wrap gap-2 items-center justify-center min-[400px]:justify-between button__group">
-          <Link to="/add-medications">
+          <Link to="/medications/add">
             <Button size={'md'} variant={'secondary'}>
               Add New Medication
               <span className="flex items-start ml-2">
