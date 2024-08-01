@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
+import { useNavigate } from 'react-router';
 
 // Todo: Add messages for invalid inputs
 const formSchema = z
@@ -60,6 +61,7 @@ export function AddMedForm() {
     },
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, userId: 1 };
@@ -72,6 +74,7 @@ export function AddMedForm() {
       body: JSON.stringify(newMedication),
     });
     if (!response.ok) throw new Error(`Response status: ${response.status}`);
+    navigate('/medications');
     toast({
       title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
     });
@@ -202,12 +205,7 @@ export function AddMedForm() {
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            className="col-span-2"
-            onClick={() =>
-              toast({ title: 'Atovorvastatin 500mg Tablet Added' })
-            }>
+          <Button type="submit" className="col-span-2">
             Submit
           </Button>
         </form>

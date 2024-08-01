@@ -86,6 +86,24 @@ app.post('/api/medications', async (req, res, next) => {
   }
 });
 
+app.get('/api/medications/:userId', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) throw new ClientError(400, 'UserId required');
+    // Not sure if this is correct
+    const sql = `
+      select *
+        from "medications"
+        where "userId" = $1;
+    `;
+    const result = await db.query<Medication>(sql, [userId]);
+    const medications = result.rows;
+    res.json(medications);
+  } catch (err) {
+    next(err);
+  }
+});
+
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.

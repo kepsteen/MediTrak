@@ -26,10 +26,20 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        slideDown: {
+          '0%': { height: '0' },
+          '100%': { height: 'var(--radix-collapsible-content-height)' },
+        },
+        slideUp: {
+          '0%': { height: 'var(--radix-collapsible-content-height)' },
+          '100%': { height: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'slide-down': 'slideDown 300ms ease-out',
+        'slide-up': 'slideUp 300ms ease-out',
       },
       colors: {
         ruby: '#E11D47',
@@ -49,7 +59,7 @@ export default {
     130deg,
     rgba(243, 243, 243, 1) 0% 45%,
     rgba(236, 188, 198, 0.7) 48% 73%,
-    rgba(225, 29, 71, 0.8) 76% 100%
+    rgba(225, 29, 71, 0.7) 77% 100%
   );`,
       },
     },
