@@ -21,20 +21,13 @@ import {
   Tablets,
   Wind,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Medication } from '../../data';
 
-type Medication = {
-  id: number;
-  name: string;
-  dosage: string;
-  form: string;
-  notes: string;
-  prescriber: string;
-  amount: number;
-  remaining: number;
-  userId: number;
-  createdAt: string;
+type Props = {
+  medications: Medication[];
+  error: unknown;
 };
 
 const MedicationIcon = ({ type }) => {
@@ -57,28 +50,11 @@ const MedicationIcon = ({ type }) => {
   }
 };
 
-export function MedicationList() {
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [openStates, setOpenStates] = useState<boolean[]>([]);
+export function MedicationList({ medications, error }: Props) {
+  const [openStates, setOpenStates] = useState<boolean[]>(
+    new Array(medications.length).fill(false)
+  );
   const [isAllExpanded, setIsAllExpanded] = useState(false);
-  const [error, setError] = useState<unknown>();
-
-  const userId = 1;
-  useEffect(() => {
-    const fetchMedications = async () => {
-      try {
-        const response = await fetch(`/api/medications/${userId}`);
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const medications = (await response.json()) as Medication[];
-        setMedications(medications);
-        setOpenStates(new Array(medications.length).fill(false));
-      } catch (error) {
-        setError(error);
-      }
-    };
-    fetchMedications();
-  }, []);
 
   function toggleCard(index: number) {
     setOpenStates((prevStates) => {
