@@ -100,11 +100,11 @@ export function MedicationList({ medications, error }: Props) {
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (
-            <li>
+            <li key={`${medication.name}${index}`}>
               <Collapsible
                 open={openStates[index]}
                 onOpenChange={() => toggleCard(index)}>
-                <Card key={`${medication.name}${index}`}>
+                <Card>
                   <CardHeader className="hover:bg-gray-200">
                     <CollapsibleTrigger>
                       <CardTitle className="flex items-center text-redblack">

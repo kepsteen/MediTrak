@@ -25,7 +25,7 @@ export function MedicationsLayout() {
   }, []);
   return (
     <>
-      <Tabs defaultValue="list" className="container pt-[90px]">
+      <Tabs defaultValue="list" className="container pt-[110px]">
         <div className="flex justify-center">
           <TabsList>
             <TabsTrigger value="list">List</TabsTrigger>
