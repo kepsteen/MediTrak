@@ -103,10 +103,10 @@ export function MedicationList() {
   }
   return (
     <>
-      <section className="container pt-[110px] pb-[40px] ">
+      <section className="container pb-[40px] ">
         <div className="flex flex-wrap gap-2 items-center justify-center min-[400px]:justify-between button__group">
           <Link to="/medications/add">
-            <Button size={'md'} variant={'secondary'}>
+            <Button size="md" variant="secondary">
               Add New Medication
               <span className="flex items-start ml-2">
                 <Pill size={24} />
@@ -115,8 +115,8 @@ export function MedicationList() {
             </Button>
           </Link>
           <Button
-            size={'md'}
-            variant={'outline'}
+            size="md"
+            variant="outline"
             className="w-[6rem] my-2"
             onClick={toggleAll}>
             {isAllExpanded ? 'Close All' : 'Expand All'}

@@ -104,6 +104,13 @@ app.get('/api/medications/:userId', async (req, res, next) => {
   }
 });
 
+// app.post('/api/medications/schedule', async (req, res, next) => {
+//   try {
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.
