@@ -1,5 +1,6 @@
 import { AddScheduleForm } from '@/components/AddScheduleForm';
 import { Medication } from '../../data';
+import { useEffect, useState } from 'react';
 
 type Props = {
   medications: Medication[];
@@ -7,6 +8,22 @@ type Props = {
 };
 
 export function MedicationSchedule({ medications, error }: Props) {
+  const [currentDay, setCurrentDay] = useState('');
+
+  useEffect(() => {
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+    const today = new Date().getDay();
+    setCurrentDay(days[today]);
+  }, []);
+
   if (error) {
     return (
       <>
@@ -18,7 +35,7 @@ export function MedicationSchedule({ medications, error }: Props) {
     <>
       <AddScheduleForm medications={medications} />
 
-      <h1>Im the schedule</h1>
+      <h1>{`Today is ${currentDay}`}</h1>
     </>
   );
 }

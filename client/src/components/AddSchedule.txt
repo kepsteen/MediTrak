@@ -1,0 +1,247 @@
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from './ui/checkbox';
+import { useEffect, useState } from 'react';
+import { Medication, Schedule } from 'data';
+import { useToast } from './ui/use-toast';
+
+const days = [
+  {
+    id: 'Monday',
+    label: 'Monday',
+  },
+  {
+    id: 'Tuesday',
+    label: 'Tuesday',
+  },
+  {
+    id: 'Wednesday',
+    label: 'Wednesday',
+  },
+  {
+    id: 'Thursday',
+    label: 'Thursday',
+  },
+  {
+    id: 'Friday',
+    label: 'Friday',
+  },
+  {
+    id: 'Saturday',
+    label: 'Saturday',
+  },
+  {
+    id: 'Sunday',
+    label: 'Sunday',
+  },
+];
+
+type Props = {
+  medications: Medication[];
+};
+
+const formSchema = z.object({
+  days: z.array(z.string()),
+  frequency: z.string(),
+});
+
+export function AddScheduleForm({ medications }: Props) {
+  const [unScheduledMeds, setUnScheduledMeds] = useState<Medication[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState('');
+
+  const [key, setKey] = useState(+new Date());
+  const [error, setError] = useState<unknown>();
+  const { toast } = useToast();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      days: [],
+      frequency: '0',
+    },
+  });
+  // const resetForm = useCallback(() => {
+  //   form.reset({ days: [], frequency: '0' });
+  // }, [form]);
+
+  useEffect(() => {
+    console.log('running');
+    setUnScheduledMeds(
+      medications.filter((medications) => !medications.scheduled)
+    );
+  }, [medications]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      if (Number(values.frequency) !== 0) {
+        const newSchedule = {
+          medicationId: unScheduledMeds[selectedIndex].id,
+          timesPerDay: values.frequency,
+          daysOfWeek: values.days,
+          userId: 1,
+        };
+
+        const response = await fetch('/api/medications/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSchedule),
+        });
+        if (!response.ok)
+          throw new Error(`Response status: ${response.status}`);
+        toast({
+          title: `Schedule created for ${unScheduledMeds[selectedIndex].name}`,
+        });
+        const schedule = (await response.json()) as Schedule;
+        console.log('schedule', schedule);
+      }
+
+      const updatedMedication = {
+        medicationId: unScheduledMeds[selectedIndex].id,
+        scheduled: true,
+      };
+
+      const response2 = await fetch('/api/medications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedMedication),
+      });
+      if (!response2.ok)
+        throw new Error(`Response2 status: ${response2.status}`);
+      const medication = (await response2.json()) as Medication;
+      console.log('medication', medication);
+    } catch (error) {
+      setError(error);
+    } finally {
+      form.reset({
+        days: [],
+        frequency: '0',
+      });
+      setKey(+new Date());
+      setSelectedIndex((prev) => prev + 1);
+    }
+  }
+  if (error) {
+    return (
+      <>
+        <p>{`Error: ${error}`}</p>
+      </>
+    );
+  }
+  return (
+    <>
+      {selectedIndex < unScheduledMeds.length && (
+        <section className="container pt-4">
+          <Card className="pt-4">
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-8">
+                  <div className="grid-cols-2 gap-2 md:grid">
+                    <FormField
+                      control={form.control}
+                      name="days"
+                      render={({ field }) => (
+                        <FormItem className="mb-6">
+                          <div className="mb-4">
+                            <FormLabel className="text-2xl">
+                              {unScheduledMeds[selectedIndex].name}
+                            </FormLabel>
+                            <FormDescription>
+                              {`Select the days that you take ${unScheduledMeds[selectedIndex].name}`}
+                            </FormDescription>
+                          </div>
+                          <div className="space-y-2">
+                            {days.map((day) => (
+                              <FormItem
+                                key={day.id}
+                                className="flex flex-row items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value.includes(day.id)}
+                                    onCheckedChange={(checked) => {
+                                      const updatedValue = checked
+                                        ? [...field.value, day.id]
+                                        : field.value.filter(
+                                            (value) => value !== day.id
+                                          );
+                                      field.onChange(updatedValue);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-lg font-normal">
+                                  {day.label}
+                                </FormLabel>
+                              </FormItem>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="frequency"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col justify-center">
+                          <FormLabel>How many doses per day?</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              setSelectedOption(value);
+                            }}
+                            value={selectedOption}
+                            key={key}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent position="popper">
+                              <SelectItem value="0">PRN</SelectItem>
+                              <SelectItem value="1">One</SelectItem>
+                              <SelectItem value="2">Two</SelectItem>
+                              <SelectItem value="3">Three</SelectItem>
+                              <SelectItem value="4">Four</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      size="md"
+                      className="w-full col-span-2 mt-4">
+                      Submit
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+    </>
+  );
+}
+
+// form studff sat morning

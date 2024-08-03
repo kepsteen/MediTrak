@@ -6,29 +6,19 @@ drop schema "public" cascade;
 
 create schema "public";
 
-CREATE TYPE timeOfDay AS ENUM ('Morning', 'Noon', 'Evening', 'Bedtime');
-CREATE TYPE dayOfWeek AS ENUM ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
-CREATE TYPE userRole AS ENUM ('Patient', 'Caregiver');
-
 CREATE TABLE "medicationSchedules" (
   "id" serial PRIMARY KEY,
   "medicationId" integer,
   "timesPerDay" integer,
-  "timeOfDay" timeOfDay,
+  "daysOfWeek" varchar(255)[],
   "userId" integer
-);
-
-CREATE TABLE "scheduleDays" (
-  "id" serial PRIMARY KEY,
-  "scheduleId" integer,
-  "dayOfWeek" dayOfWeek
 );
 
 CREATE TABLE "users" (
   "id" serial PRIMARY KEY,
   "username" text,
   "email" text UNIQUE,
-  "role" userRole,
+  "role" text,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -43,6 +33,7 @@ CREATE TABLE "medications" (
   "amount" integer,
   "remaining" integer,
   "userId" integer,
+  "scheduled" boolean,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -71,8 +62,6 @@ COMMENT ON COLUMN "medications"."notes" IS 'Any notes about the med';
 ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("id");
 
 ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
-
-ALTER TABLE "scheduleDays" ADD FOREIGN KEY ("scheduleId") REFERENCES "medicationSchedules" ("id");
 
 ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
 

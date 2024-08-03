@@ -1,16 +1,4 @@
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -18,10 +6,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from './ui/checkbox';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Medication } from 'data';
+import { Progress } from '@/components/ui/progress';
 
 const days = [
   {
@@ -54,132 +49,183 @@ const days = [
   },
 ];
 
+type Schedule = {
+  medicationId: number;
+  userId: number;
+  days: string[];
+  frequency: number;
+};
+
 type Props = {
   medications: Medication[];
 };
 
-const formSchema = z.object({
-  days: z.array(z.string()),
-  frequency: z.string(),
-});
-
 export function AddScheduleForm({ medications }: Props) {
+  const [unScheduledMeds, setUnscheduleMeds] = useState<Medication[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      days: [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ],
-      frequency: '0',
-    },
-  });
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setSelectedIndex(selectedIndex + 1);
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-    form.reset();
+  const [checkedState, setCheckedState] = useState<boolean[]>(
+    new Array(days.length).fill(false)
+  );
+  const [timesPerDay, setTimesPerDay] = useState<string>('');
+  const [error, setError] = useState<unknown>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    setUnscheduleMeds(
+      medications.filter((medication) => !medication.scheduled)
+    );
+  }, [medications]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLoading) {
+      timer = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 100) {
+            clearInterval(timer);
+            return 100;
+          }
+          return prevProgress + 25;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isLoading]);
+
+  function handleCheckedChange(position: number) {
+    const updatedCheckedState = checkedState.map((item, index) =>
+      index === position ? !item : item
+    );
+    setCheckedState(updatedCheckedState);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    setIsLoading(true);
+    setProgress(0);
+    e.preventDefault();
+    try {
+      if (Number(timesPerDay) !== 0) {
+        const newSchedule = {
+          medicationId: unScheduledMeds[selectedIndex].id,
+          timesPerDay: timesPerDay,
+          daysOfWeek: checkedState.map(
+            (item, index) => item && days[index].label
+          ),
+          userId: 1,
+        };
+        console.log('new schedule', newSchedule);
+
+        const response = await fetch('/api/medications/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSchedule),
+        });
+        if (!response.ok)
+          throw new Error(`Response status: ${response.status}`);
+
+        const schedule = (await response.json()) as Schedule;
+        console.log('schedule', schedule);
+      }
+
+      const updatedMedication = {
+        medicationId: unScheduledMeds[selectedIndex].id,
+        scheduled: true,
+      };
+
+      const response2 = await fetch('/api/medications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedMedication),
+      });
+      if (!response2.ok)
+        throw new Error(`Response2 status: ${response2.status}`);
+      const medication = (await response2.json()) as Medication;
+      console.log('medication', medication);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+        setCheckedState(new Array(days.length).fill(false));
+        setTimesPerDay('');
+        setSelectedIndex((prev) => prev + 1);
+      }, 4000);
+    }
+  }
+
+  if (error) {
+    return (
+      <>
+        <p>{`Error: ${error}`}</p>
+      </>
+    );
   }
   return (
     <>
-      <section className="container pt-4">
-        <Card className="pt-4">
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8">
-                <FormField
-                  control={form.control}
-                  name="days"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel className="text-2xl">
-                          {medications[selectedIndex].name}
-                        </FormLabel>
-                        <FormDescription>
-                          {`Select the days that you take ${medications[selectedIndex].name}`}
-                        </FormDescription>
-                      </div>
-                      {days.map((day) => (
-                        <FormField
-                          key={day.id}
-                          control={form.control}
-                          name="days"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={day.id}
-                                className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(day.id)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([
-                                            ...field.value,
-                                            day.id,
-                                          ])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== day.id
-                                            )
-                                          );
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-lg font-normal">
-                                  {day.label}
-                                </FormLabel>
-                              </FormItem>
-                            );
-                          }}
-                        />
-                      ))}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="frequency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How many doses per day?</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent position="popper">
-                          <SelectItem value="0">PRN</SelectItem>
-                          <SelectItem value="1">One</SelectItem>
-                          <SelectItem value="2">Two</SelectItem>
-                          <SelectItem value="3">Three</SelectItem>
-                          <SelectItem value="4">Four</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit">Submit</Button>
+      {selectedIndex < unScheduledMeds.length && (
+        <section className="container pt-4">
+          <Card className={`relative pt-4 ${isLoading && 'opacity-0'}`}>
+            <CardHeader className="text-2xl text-redblack">
+              <CardTitle>{unScheduledMeds[selectedIndex].name}</CardTitle>
+              <CardDescription>{`Add ${unScheduledMeds[selectedIndex].name} to your schedule`}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action="" onSubmit={(e) => handleSubmit(e)}>
+                <ul>
+                  {days.map((day, index) => (
+                    <li key={day.id} className="flex items-center gap-2 mb-3">
+                      <Checkbox
+                        id={day.id}
+                        checked={checkedState[index]}
+                        onCheckedChange={() => handleCheckedChange(index)}
+                      />
+                      <label
+                        htmlFor={day.id}
+                        className="text-lg font-medium leading-none text-redblack peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        {day.label}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-col gap-4 pt-4">
+                  <label htmlFor="" className="text-lg text-redblack">
+                    How many doses do you take per day?
+                  </label>
+                  <Select
+                    value={timesPerDay}
+                    onValueChange={(value) => setTimesPerDay(value)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select a frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">PRN</SelectItem>
+                      <SelectItem value="1">One</SelectItem>
+                      <SelectItem value="2">Two</SelectItem>
+                      <SelectItem value="3">Three</SelectItem>
+                      <SelectItem value="4">Four</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="submit"
+                  size="md"
+                  className="w-full col-span-2 mt-4">
+                  Submit
+                </Button>
               </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </section>
+            </CardContent>
+          </Card>
+          {isLoading && (
+            <div className="absolute top-[180px] left-[40px] right-[40px] bottom-[50%] bg-white rounded-md ">
+              <div className="flex flex-col justify-center h-full gap-4 mx-10">
+                <p className="text-2xl text-center text-redblack">{`Adding ${unScheduledMeds[selectedIndex].name} to your schedule.`}</p>
+                <Progress value={progress} />
+              </div>
+            </div>
+          )}
+        </section>
+      )}
     </>
   );
 }
