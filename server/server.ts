@@ -133,19 +133,18 @@ app.post('/api/medications/schedule', async (req, res, next) => {
 
 app.put('/api/medications', async (req, res, next) => {
   try {
-    const { scheduled, medicationId } = req.body;
-    console.log('scheduled', scheduled);
-    console.log('medicationId', medicationId);
-    if (scheduled === undefined || !medicationId) {
-      throw new ClientError(400, 'scheduled and medicationId required');
+    const { scheduled, id } = req.body;
+    if (scheduled === undefined) {
+      throw new ClientError(400, 'scheduled property required');
     }
+    if (!id) throw new ClientError(400, 'medicationId required');
     const sql = `
       update "medications"
         set "scheduled" = $1
         where "id" = $2
         returning *;
     `;
-    const result = await db.query(sql, [scheduled, medicationId]);
+    const result = await db.query(sql, [scheduled, id]);
     const [medication] = result.rows;
     if (!medication)
       throw new ClientError(404, `failed to update scheduled status`);

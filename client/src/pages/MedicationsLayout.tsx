@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicationList } from './MedicationList';
-import { MedicationSchedule } from './MedicationSchedule';
+import { MedicationSchedule } from '../components/MedicationSchedule';
 import { useEffect, useState } from 'react';
 import { Medication } from '../../data';
 
@@ -23,6 +23,25 @@ export function MedicationsLayout() {
     };
     fetchMedications();
   }, []);
+
+  async function updateMedication(updatedMedication: Medication) {
+    try {
+      const response2 = await fetch('/api/medications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedMedication),
+      });
+      if (!response2.ok)
+        throw new Error(`Response2 status: ${response2.status}`);
+      setMedications((prevMeds) =>
+        prevMeds.map((med) =>
+          med.id === updatedMedication.id ? updatedMedication : med
+        )
+      );
+    } catch (error) {
+      setError(error);
+    }
+  }
   return (
     <>
       <Tabs defaultValue="list" className="container pt-[110px]">
@@ -36,7 +55,11 @@ export function MedicationsLayout() {
           <MedicationList medications={medications} error={error} />
         </TabsContent>
         <TabsContent value="schedule">
-          <MedicationSchedule medications={medications} error={error} />
+          <MedicationSchedule
+            medications={medications}
+            error={error}
+            updateMedication={updateMedication}
+          />
         </TabsContent>
       </Tabs>
     </>
