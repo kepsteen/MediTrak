@@ -100,8 +100,10 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
           medicationId: medication.id,
           timesPerDay: parseInt(timesPerDay),
           daysOfWeek: daysAdded,
-          fullMedName: `${medication.name} ${medication.dosage} ${medication.form}`,
           userId: 1,
+          name: medication.name,
+          dosage: medication.dosage,
+          form: medication.form,
         };
 
         const response = await fetch('/api/schedule', {

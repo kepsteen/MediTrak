@@ -11,8 +11,10 @@ CREATE TABLE "medicationSchedules" (
   "medicationId" integer,
   "timesPerDay" integer,
   "daysOfWeek" varchar(255)[],
-  "fullMedName" text,
-  "userId" integer
+  "userId" integer,
+  "name" text,
+  "dosage" text,
+  "form" text
 );
 
 CREATE TABLE "users" (

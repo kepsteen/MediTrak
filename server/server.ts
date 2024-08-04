@@ -22,6 +22,10 @@ type Schedule = {
   medicationId: number;
   timesPerDay: number;
   daysOfWeek: string[];
+  userId: number;
+  name: string;
+  dosage: string;
+  form: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -44,6 +48,29 @@ function validateMedication(reqBody: unknown): void {
   if (!Number.isInteger(+remaining) && remaining !== null) {
     throw new ClientError(400, `amount ${remaining} is not a number`);
   }
+}
+
+function validateSchedule(reqBody: unknown): void {
+  const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
+    reqBody as Schedule;
+  if (!Number.isInteger(medicationId)) {
+    throw new ClientError(400, 'Valid medicationId (integer) is required');
+  }
+  if (!Number.isInteger(timesPerDay)) {
+    throw new ClientError(400, 'Valid timesPerDay (integer) is required');
+  }
+  if (
+    !Array.isArray(daysOfWeek) ||
+    !daysOfWeek.every((day) => typeof day === 'string')
+  ) {
+    throw new ClientError(400, 'daysOfWeek must be an array of strings');
+  }
+  if (!Number.isInteger(userId)) {
+    throw new ClientError(400, 'Valid userId (integer) is required');
+  }
+  if (!name) throw new ClientError(400, 'Valid name required');
+  if (!dosage) throw new ClientError(400, 'Valid dosage required');
+  if (!form) throw new ClientError(400, 'Valid form required');
 }
 
 const db = new pg.Pool({
@@ -123,35 +150,30 @@ app.get('/api/medications/:userId', async (req, res, next) => {
 
 app.post('/api/schedule', async (req, res, next) => {
   try {
-    const { medicationId, timesPerDay, daysOfWeek, fullMedName, userId } =
-      req.body;
-    if (!Number.isInteger(medicationId)) {
-      throw new ClientError(400, 'Valid medicationId (integer) is required');
-    }
-    if (!Number.isInteger(timesPerDay)) {
-      throw new ClientError(400, 'Valid timesPerDay (integer) is required');
-    }
-    if (
-      !Array.isArray(daysOfWeek) ||
-      !daysOfWeek.every((day) => typeof day === 'string')
-    ) {
-      throw new ClientError(400, 'daysOfWeek must be an array of strings');
-    }
-    if (!Number.isInteger(userId)) {
-      throw new ClientError(400, 'Valid userId (integer) is required');
-    }
-    if (!fullMedName) throw new ClientError(400, 'Valid name required');
-    const sql = `
-      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
-        values ($1, $2, $3, $4, $5)
-        returning *;
-    `;
-    const result = await db.query(sql, [
+    validateSchedule(req.body);
+    const {
       medicationId,
       timesPerDay,
       daysOfWeek,
-      fullMedName,
       userId,
+      name,
+      dosage,
+      form,
+    } = req.body;
+
+    const sql = `
+      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
+        values ($1, $2, $3, $4, $5, $6, $7)
+        returning *;
+    `;
+    const result = await db.query<Schedule>(sql, [
+      medicationId,
+      timesPerDay,
+      daysOfWeek,
+      userId,
+      name,
+      dosage,
+      form,
     ]);
     const schedules = result.rows;
     console.log('schedules', schedules);

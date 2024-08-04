@@ -157,16 +157,12 @@ export function MedicationSchedule({
                       return (
                         <li key={`${medTime}${schedule.id}`}>
                           <HoverClickPopover
-                            trigger={
-                              <h3>{schedule.fullMedName.split(' ').shift()}</h3>
-                            }
+                            trigger={<span>{schedule.name}</span>}
                             content={
                               <div className="flex space-x-4">
-                                <MedicationIcon
-                                  type={schedule.fullMedName.split(' ').pop()}
-                                />
+                                <MedicationIcon type={schedule.form} />
                                 <h4 className="text-sm font-semibold">
-                                  {schedule.fullMedName}
+                                  {`${schedule.name} ${schedule.dosage} ${schedule.form}`}
                                 </h4>
                               </div>
                             }></HoverClickPopover>

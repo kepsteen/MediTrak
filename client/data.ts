@@ -17,6 +17,8 @@ export type Schedule = {
   medicationId: number;
   timesPerDay: number;
   daysOfWeek: string[];
-  fullMedName: string;
   userId: number;
+  name: string;
+  dosage: string;
+  form: string;
 };
