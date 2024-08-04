@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { LandingPage } from './pages/LandingPage';
 import { AddMedications } from './pages/AddMedications';
 import { Toaster } from './components/ui/toaster';
-import { MedicationList } from './pages/MedicationList';
+import { MedicationsLayout } from './pages/MedicationsLayout';
 
 export default function App() {
   return (
@@ -12,7 +12,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Header />}>
           <Route index element={<LandingPage />} />
-          <Route path="medications" element={<MedicationList />} />
+          <Route path="medications" element={<MedicationsLayout />} />
           <Route path="medications/add" element={<AddMedications />} />
         </Route>
       </Routes>

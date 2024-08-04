@@ -21,20 +21,13 @@ import {
   Tablets,
   Wind,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Medication } from '../../data';
 
-type Medication = {
-  id: number;
-  name: string;
-  dosage: string;
-  form: string;
-  notes: string;
-  prescriber: string;
-  amount: number;
-  remaining: number;
-  userId: number;
-  createdAt: string;
+type Props = {
+  medications: Medication[];
+  error: unknown;
 };
 
 const MedicationIcon = ({ type }) => {
@@ -57,28 +50,11 @@ const MedicationIcon = ({ type }) => {
   }
 };
 
-export function MedicationList() {
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [openStates, setOpenStates] = useState<boolean[]>([]);
+export function MedicationList({ medications, error }: Props) {
+  const [openStates, setOpenStates] = useState<boolean[]>(
+    new Array(medications.length).fill(false)
+  );
   const [isAllExpanded, setIsAllExpanded] = useState(false);
-  const [error, setError] = useState<unknown>();
-
-  const userId = 1;
-  useEffect(() => {
-    const fetchMedications = async () => {
-      try {
-        const response = await fetch(`/api/medications/${userId}`);
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const medications = (await response.json()) as Medication[];
-        setMedications(medications);
-        setOpenStates(new Array(medications.length).fill(false));
-      } catch (error) {
-        setError(error);
-      }
-    };
-    fetchMedications();
-  }, []);
 
   function toggleCard(index: number) {
     setOpenStates((prevStates) => {
@@ -103,10 +79,10 @@ export function MedicationList() {
   }
   return (
     <>
-      <section className="container pt-[110px] pb-[40px] ">
+      <section className="container pb-[40px] ">
         <div className="flex flex-wrap gap-2 items-center justify-center min-[400px]:justify-between button__group">
           <Link to="/medications/add">
-            <Button size={'md'} variant={'secondary'}>
+            <Button size="md" variant="secondary">
               Add New Medication
               <span className="flex items-start ml-2">
                 <Pill size={24} />
@@ -115,8 +91,8 @@ export function MedicationList() {
             </Button>
           </Link>
           <Button
-            size={'md'}
-            variant={'outline'}
+            size="md"
+            variant="outline"
             className="w-[6rem] my-2"
             onClick={toggleAll}>
             {isAllExpanded ? 'Close All' : 'Expand All'}
@@ -124,11 +100,11 @@ export function MedicationList() {
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (
-            <li>
+            <li key={`${medication.name}${index}`}>
               <Collapsible
                 open={openStates[index]}
                 onOpenChange={() => toggleCard(index)}>
-                <Card key={`${medication.name}${index}`}>
+                <Card>
                   <CardHeader className="hover:bg-gray-200">
                     <CollapsibleTrigger>
                       <CardTitle className="flex items-center text-redblack">

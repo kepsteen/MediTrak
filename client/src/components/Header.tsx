@@ -29,7 +29,7 @@ export function Header() {
   return (
     <>
       <header
-        className={`fixed flex items-center justify-between w-screen px-4 py-4 md:px-10 transition-ease ${
+        className={`fixed z-50 flex items-center justify-between w-screen px-4 py-4 md:px-10 transition-ease ${
           hasScrolled && 'bg-lightgray shadow-md'
         }`}>
         <Link to="/" className="logo">

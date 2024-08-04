@@ -15,7 +15,7 @@ export function LandingPage() {
             className="rounded-full shadow-xl"
           />
         </div>
-        <Button asChild size={'lg'} className="text-[1.5rem] shadow-sm">
+        <Button asChild size="lg" className="text-[1.5rem] shadow-sm">
           <Link to="/medications">Start Tracking now</Link>
         </Button>
       </section>

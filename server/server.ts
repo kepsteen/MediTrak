@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Remove when used */
 import 'dotenv/config';
 import express from 'express';
-import pg from 'pg';
+import pg, { Client } from 'pg';
 import { ClientError, errorMiddleware } from './lib/index.js';
 
 type Medication = {
@@ -104,6 +104,55 @@ app.get('/api/medications/:userId', async (req, res, next) => {
   }
 });
 
+app.post('/api/medications/schedule', async (req, res, next) => {
+  try {
+    const { medicationId, timesPerDay, daysOfWeek, userId } = req.body;
+    if (!medicationId || !timesPerDay || !daysOfWeek || !userId) {
+      throw new ClientError(
+        400,
+        'medicationId, timesPerday, daysOfWeek, userId required'
+      );
+    }
+    const sql = `
+      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId")
+        values ($1, $2, $3, $4)
+        returning *;
+    `;
+    const result = await db.query(sql, [
+      medicationId,
+      timesPerDay,
+      daysOfWeek,
+      userId,
+    ]);
+    const schedules = result.rows;
+    res.status(201).json(schedules);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/medications', async (req, res, next) => {
+  try {
+    const { scheduled, id } = req.body;
+    if (scheduled === undefined) {
+      throw new ClientError(400, 'scheduled property required');
+    }
+    if (!id) throw new ClientError(400, 'medicationId required');
+    const sql = `
+      update "medications"
+        set "scheduled" = $1
+        where "id" = $2
+        returning *;
+    `;
+    const result = await db.query(sql, [scheduled, id]);
+    const [medication] = result.rows;
+    if (!medication)
+      throw new ClientError(404, `failed to update scheduled status`);
+    res.status(200).json(medication);
+  } catch (err) {
+    next(err);
+  }
+});
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.
