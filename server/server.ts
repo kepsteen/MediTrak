@@ -17,6 +17,17 @@ type Medication = {
   createdAt: string;
 };
 
+type Schedule = {
+  id: number;
+  medicationId: number;
+  timesPerDay: number;
+  daysOfWeek: string[];
+  userId: number;
+  name: string;
+  dosage: string;
+  form: string;
+};
+
 function validateMedication(reqBody: unknown): void {
   const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
     reqBody as Medication;
@@ -37,6 +48,29 @@ function validateMedication(reqBody: unknown): void {
   if (!Number.isInteger(+remaining) && remaining !== null) {
     throw new ClientError(400, `amount ${remaining} is not a number`);
   }
+}
+
+function validateSchedule(reqBody: unknown): void {
+  const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
+    reqBody as Schedule;
+  if (!Number.isInteger(medicationId)) {
+    throw new ClientError(400, 'Valid medicationId (integer) is required');
+  }
+  if (!Number.isInteger(timesPerDay)) {
+    throw new ClientError(400, 'Valid timesPerDay (integer) is required');
+  }
+  if (
+    !Array.isArray(daysOfWeek) ||
+    !daysOfWeek.every((day) => typeof day === 'string')
+  ) {
+    throw new ClientError(400, 'daysOfWeek must be an array of strings');
+  }
+  if (!Number.isInteger(userId)) {
+    throw new ClientError(400, 'Valid userId (integer) is required');
+  }
+  if (!name) throw new ClientError(400, 'Valid name required');
+  if (!dosage) throw new ClientError(400, 'Valid dosage required');
+  if (!form) throw new ClientError(400, 'Valid form required');
 }
 
 const db = new pg.Pool({
@@ -60,11 +94,20 @@ app.use(express.json());
 app.post('/api/medications', async (req, res, next) => {
   try {
     validateMedication(req.body);
-    const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
-      req.body;
+    const {
+      name,
+      dosage,
+      form,
+      notes,
+      prescriber,
+      amount,
+      remaining,
+      scheduled,
+      userId,
+    } = req.body;
     const sql = `
-      insert into "medications" ("rxcui","name","dosage","form","notes","prescriber","amount","remaining","userId" )
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      insert into "medications" ("rxcui","name","dosage","form","notes","prescriber","amount","remaining","scheduled","userId" )
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         returning *;
     `;
     const params = [
@@ -76,6 +119,7 @@ app.post('/api/medications', async (req, res, next) => {
       prescriber,
       amount,
       remaining,
+      scheduled,
       userId,
     ];
     const result = await db.query<Medication>(sql, params);
@@ -104,27 +148,35 @@ app.get('/api/medications/:userId', async (req, res, next) => {
   }
 });
 
-app.post('/api/medications/schedule', async (req, res, next) => {
+app.post('/api/schedule', async (req, res, next) => {
   try {
-    const { medicationId, timesPerDay, daysOfWeek, userId } = req.body;
-    if (!medicationId || !timesPerDay || !daysOfWeek || !userId) {
-      throw new ClientError(
-        400,
-        'medicationId, timesPerday, daysOfWeek, userId required'
-      );
-    }
-    const sql = `
-      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId")
-        values ($1, $2, $3, $4)
-        returning *;
-    `;
-    const result = await db.query(sql, [
+    validateSchedule(req.body);
+    const {
       medicationId,
       timesPerDay,
       daysOfWeek,
       userId,
+      name,
+      dosage,
+      form,
+    } = req.body;
+
+    const sql = `
+      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
+        values ($1, $2, $3, $4, $5, $6, $7)
+        returning *;
+    `;
+    const result = await db.query<Schedule>(sql, [
+      medicationId,
+      timesPerDay,
+      daysOfWeek,
+      userId,
+      name,
+      dosage,
+      form,
     ]);
     const schedules = result.rows;
+    console.log('schedules', schedules);
     res.status(201).json(schedules);
   } catch (err) {
     next(err);
@@ -149,6 +201,22 @@ app.put('/api/medications', async (req, res, next) => {
     if (!medication)
       throw new ClientError(404, `failed to update scheduled status`);
     res.status(200).json(medication);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/schedule', async (req, res, next) => {
+  try {
+    const sql = `
+      select *
+        from "medicationSchedules";
+    `;
+    const result = await db.query(sql);
+    const schedules = result.rows;
+    if (schedules.length === 0)
+      throw new ClientError(404, 'No schedules found');
+    res.json(schedules);
   } catch (err) {
     next(err);
   }
