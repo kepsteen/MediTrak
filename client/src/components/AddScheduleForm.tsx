@@ -63,12 +63,6 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // useEffect(() => {
-  //   setUnscheduleMeds(
-  //     medications.filter((medication) => !medication.scheduled)
-  //   );
-  // }, [medications]);
-
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isLoading) {
@@ -104,12 +98,13 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
         }
         const newSchedule = {
           medicationId: medication.id,
-          timesPerDay: timesPerDay,
+          timesPerDay: parseInt(timesPerDay),
           daysOfWeek: daysAdded,
+          fullMedName: `${medication.name} ${medication.dosage} ${medication.form}`,
           userId: 1,
         };
 
-        const response = await fetch('/api/medications/schedule', {
+        const response = await fetch('/api/schedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newSchedule),
@@ -139,7 +134,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
   return (
     <>
       <section className="container pt-4">
-        <Card className={`relative pt-4 ${isLoading && 'opacity-0'}`}>
+        <Card className={`relative pt-4 ${isLoading && 'hidden'}`}>
           <CardHeader className="text-2xl text-redblack">
             <CardTitle>{medication.name}</CardTitle>
             <CardDescription>{`Add ${medication.name} to your schedule`}</CardDescription>

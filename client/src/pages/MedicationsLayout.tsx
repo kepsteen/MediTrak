@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MedicationList } from './MedicationList';
+import { MedicationList } from '../components/MedicationList';
 import { MedicationSchedule } from '../components/MedicationSchedule';
 import { useEffect, useState } from 'react';
 import { Medication } from '../../data';

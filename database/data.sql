@@ -35,3 +35,43 @@ INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescrib
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
   VALUES (1, 'Levothyroxine', '75 mcg', 'Tablet', 'For hypothyroidism', 'Dr. Anderson', 90, 88, false, 1);
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (1, 2, '{Monday, Wednesday, Friday}', 'Tylenol 500 mg Capsule', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (2, 3, '{Tuesday, Thursday, Saturday}', 'Amoxicillin 250 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (3, 1, '{Monday, Tuesday}', 'Lisinopril 10 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (4, 4, '{Wednesday, Friday, Sunday}', 'Metformin 500 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (5, 2, '{Monday, Thursday}', 'Sertraline 50 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (6, 3, '{Saturday, Sunday}', 'Albuterol 90 mcg Inhaler', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (7, 1, '{Wednesday, Saturday}', 'Omeprazole 20 mg Capsule', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (8, 4, '{Tuesday, Thursday, Sunday}', 'Ibuprofen 400 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (9, 2, '{Monday, Friday}', 'Simvastatin 20 mg Tablet', 1)
+RETURNING *;
+
+INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "fullMedName", "userId")
+VALUES (10, 3, '{Tuesday, Thursday, Saturday}', 'Levothyroxine 75 mcg Tablet', 1)
+RETURNING *;

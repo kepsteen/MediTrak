@@ -30,7 +30,7 @@ type Props = {
   error: unknown;
 };
 
-const MedicationIcon = ({ type }) => {
+export const MedicationIcon = ({ type }) => {
   switch (type) {
     case 'Injection':
       return <Syringe size={24} className="mr-2" />;

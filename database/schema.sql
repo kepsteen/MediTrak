@@ -11,6 +11,7 @@ CREATE TABLE "medicationSchedules" (
   "medicationId" integer,
   "timesPerDay" integer,
   "daysOfWeek" varchar(255)[],
+  "fullMedName" text,
   "userId" integer
 );
 
@@ -32,8 +33,8 @@ CREATE TABLE "medications" (
   "prescriber" text,
   "amount" integer,
   "remaining" integer,
-  "userId" integer,
   "scheduled" boolean,
+  "userId" integer,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
