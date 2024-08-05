@@ -175,7 +175,6 @@ app.post('/api/schedule', async (req, res, next) => {
       form,
     ]);
     const schedules = result.rows;
-    console.log('schedules', schedules);
     res.status(201).json(schedules);
   } catch (err) {
     next(err);

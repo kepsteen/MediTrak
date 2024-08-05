@@ -76,7 +76,6 @@ export function AddMedForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, scheduled: false, userId: 1 };
-    console.log('newMedication', newMedication);
     for (const key in newMedication) {
       if (newMedication[key] === '') newMedication[key] = null;
     }

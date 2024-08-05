@@ -6,6 +6,8 @@ import { Separator } from '@/components/ui/separator';
 import { MedicationIcon } from './MedicationList';
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
+import { MoveLeft, MoveRight } from 'lucide-react';
+import { Button } from './ui/button';
 
 type Props = {
   medications: Medication[];
@@ -80,36 +82,33 @@ export function MedicationSchedule({
   error,
   updateMedication,
 }: Props) {
-  const [currentDay, setCurrentDay] = useState('');
-  const [currentDate, setCurrentDate] = useState<string>();
+  const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [fetchError, setFetchError] = useState<unknown>();
   const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
 
-  useEffect(() => {
-    const dateObj = new Date();
-    const today = dateObj.getDay();
-    const month = dateObj.getMonth();
-    const date = dateObj.getDate();
-    setCurrentDay(days[today]);
-    setCurrentDate(`${months[month]}, ${dates[date]}`);
-    async function fetchSchedules() {
-      try {
-        const response = await fetch('/api/schedule');
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const schedules = (await response.json()) as Schedule[];
-        setDailySchedules(
-          schedules.filter((schedule) =>
-            schedule.daysOfWeek.includes(days[today])
-          )
-        );
-      } catch (error) {
-        setFetchError(error);
-      }
+  async function fetchSchedules(day: number) {
+    try {
+      const response = await fetch('/api/schedule');
+      if (!response.ok) throw new Error(`Response status: ${response.status}`);
+      const schedules = (await response.json()) as Schedule[];
+      setDailySchedules(
+        schedules.filter((schedule) => schedule.daysOfWeek.includes(days[day]))
+      );
+    } catch (error) {
+      setFetchError(error);
     }
-    fetchSchedules();
-  }, []);
+  }
+
+  const selectedDateString = `${days[selectedDateObj.getDay()]} ${
+    months[selectedDateObj.getMonth()]
+  }, ${dates[selectedDateObj.getDate()]}`;
+  const currentDateObj = new Date();
+
+  useEffect(() => {
+    setSelectedDateObj(selectedDateObj);
+    fetchSchedules(selectedDateObj.getDay());
+  }, [selectedDateObj]);
 
   useEffect(() => {
     setUnscheduledMeds(
@@ -123,6 +122,18 @@ export function MedicationSchedule({
     setUnscheduledMeds((prevMeds) =>
       prevMeds.filter((med) => med.id !== medication.id)
     );
+  }
+
+  function handleDateChange(direction: string) {
+    if (direction === 'previous') {
+      setSelectedDateObj(
+        new Date(selectedDateObj.setDate(selectedDateObj.getDate() - 1))
+      );
+    } else if (direction === 'next') {
+      setSelectedDateObj(
+        new Date(selectedDateObj.setDate(selectedDateObj.getDate() + 1))
+      );
+    }
   }
 
   if (error || fetchError) {
@@ -144,7 +155,23 @@ export function MedicationSchedule({
 
       <Card className="container max-w-[500px]">
         <CardHeader>
-          <CardTitle>{`Today ${currentDay} ${currentDate}`}</CardTitle>
+          <div className="flex items-center justify-between">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="flex gap-2"
+              onClick={() => handleDateChange('previous')}>
+              <MoveLeft size={18} />
+            </Button>
+            <CardTitle className="text-center">{selectedDateString}</CardTitle>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="flex gap-2"
+              onClick={() => handleDateChange('next')}>
+              <MoveRight size={18} />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div>
@@ -169,7 +196,12 @@ export function MedicationSchedule({
                                 </h4>
                               </div>
                             }></HoverClickPopover>
-                          <MedStatusDot medicationId={schedule.medicationId} />
+                          {selectedDateObj.valueOf() <=
+                            currentDateObj.valueOf() && (
+                            <MedStatusDot
+                              medicationId={schedule.medicationId}
+                            />
+                          )}
                         </li>
                       );
                     }
