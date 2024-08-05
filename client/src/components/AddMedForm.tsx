@@ -23,7 +23,6 @@ import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
 
-// Todo: Add messages for invalid inputs
 const formSchema = z
   .object({
     name: z.string().min(2).max(50),
@@ -34,6 +33,18 @@ const formSchema = z
     amount: z.coerce.string(),
     remaining: z.coerce.string(),
   })
+  .refine(
+    (data) => {
+      if (!data.amount || !data.remaining) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Remaining and amount required',
+      path: ['amount'],
+    }
+  )
   .refine(
     (data) => {
       if (data.amount && data.remaining) {
