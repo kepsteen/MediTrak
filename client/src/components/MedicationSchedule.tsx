@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { MedicationIcon } from './MedicationList';
 import { HoverClickPopover } from './ui/hover-click-popover';
+import { MedStatusDot } from './ui/med-status-dot';
 
 type Props = {
   medications: Medication[];
@@ -155,7 +156,9 @@ export function MedicationSchedule({
                   {dailySchedules.map((schedule) => {
                     if (schedule.timesPerDay >= index + 1) {
                       return (
-                        <li key={`${medTime}${schedule.id}`}>
+                        <li
+                          key={`${medTime}${schedule.id}`}
+                          className="flex items-center justify-between mb-2">
                           <HoverClickPopover
                             trigger={<span>{schedule.name}</span>}
                             content={
@@ -166,6 +169,7 @@ export function MedicationSchedule({
                                 </h4>
                               </div>
                             }></HoverClickPopover>
+                          <MedStatusDot medicationId={schedule.medicationId} />
                         </li>
                       );
                     }

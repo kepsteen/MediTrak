@@ -221,6 +221,52 @@ app.get('/api/schedule', async (req, res, next) => {
     next(err);
   }
 });
+
+app.put('/api/medications/:medicationId/inventory', async (req, res, next) => {
+  try {
+    const { medicationId } = req.params;
+    const { operation } = req.body;
+    if (!Number.isInteger(+medicationId))
+      throw new ClientError(400, 'Valid medicationId (integer) required');
+    if (operation !== 'decrement' && operation !== 'increment') {
+      throw new ClientError(400, 'Valid operation required');
+    }
+    const sql = `
+      select * from "medications"
+        where "id" = $1;
+    `;
+    const result = await db.query<Medication>(sql, [medicationId]);
+    const [medication] = result.rows;
+
+    if (!medication) throw new ClientError(404, 'no medication found');
+
+    let medicationToUpdate = { ...medication };
+    if (operation === 'decrement') {
+      medicationToUpdate = {
+        ...medication,
+        remaining: medication.remaining - 1,
+      };
+    } else if (operation === 'increment') {
+      medicationToUpdate = {
+        ...medication,
+        remaining: medication.remaining + 1,
+      };
+    }
+    const { remaining, id } = medicationToUpdate;
+    const sql2 = `
+      update "medications"
+        set "remaining" = $1
+        where "id" = $2
+        returning *;
+    `;
+    const result2 = await db.query<Medication>(sql2, [remaining, id]);
+    const [updatedMedication] = result2.rows;
+    if (!updatedMedication) throw new ClientError(404, 'No medication found');
+    res.status(200).json(updatedMedication);
+  } catch (err) {
+    next(err);
+  }
+});
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.
