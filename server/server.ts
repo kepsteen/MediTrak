@@ -134,7 +134,6 @@ app.get('/api/medications/:userId', async (req, res, next) => {
   try {
     const { userId } = req.params;
     if (!userId) throw new ClientError(400, 'UserId required');
-    // Not sure if this is correct
     const sql = `
       select *
         from "medications"

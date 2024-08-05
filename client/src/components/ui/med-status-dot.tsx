@@ -36,7 +36,6 @@ export function MedStatusDot({ medicationId }: Props) {
     );
   }
 
-  // Todo: Handle the situation if status dot is clicked multiple times
   return (
     <>
       <div
