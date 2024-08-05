@@ -87,9 +87,9 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
   }
 
   async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setIsLoading(true);
     setProgress(0);
-    e.preventDefault();
     try {
       if (Number(timesPerDay) !== 0) {
         const daysAdded: string[] = [];
@@ -160,13 +160,13 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
                 ))}
               </ul>
               <div className="flex flex-col gap-4 pt-4">
-                <label htmlFor="" className="text-lg text-redblack">
+                <label htmlFor="doses" className="text-lg text-redblack">
                   How many doses do you take per day?
                 </label>
                 <Select
                   value={timesPerDay}
                   onValueChange={(value) => setTimesPerDay(value)}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px]" id="doses">
                     <SelectValue placeholder="Select a frequency" />
                   </SelectTrigger>
                   <SelectContent>

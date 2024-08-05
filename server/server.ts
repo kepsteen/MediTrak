@@ -134,7 +134,6 @@ app.get('/api/medications/:userId', async (req, res, next) => {
   try {
     const { userId } = req.params;
     if (!userId) throw new ClientError(400, 'UserId required');
-    // Not sure if this is correct
     const sql = `
       select *
         from "medications"
@@ -176,7 +175,6 @@ app.post('/api/schedule', async (req, res, next) => {
       form,
     ]);
     const schedules = result.rows;
-    console.log('schedules', schedules);
     res.status(201).json(schedules);
   } catch (err) {
     next(err);
@@ -217,6 +215,52 @@ app.get('/api/schedule', async (req, res, next) => {
     if (schedules.length === 0)
       throw new ClientError(404, 'No schedules found');
     res.json(schedules);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/medications/:medicationId/inventory', async (req, res, next) => {
+  try {
+    const { medicationId } = req.params;
+    const { operation } = req.body;
+    if (!Number.isInteger(+medicationId))
+      throw new ClientError(400, 'Valid medicationId (integer) required');
+    if (operation !== 'decrement' && operation !== 'increment') {
+      throw new ClientError(400, 'Valid operation required');
+    }
+    const sql = `
+      select * from "medications"
+        where "id" = $1;
+    `;
+    const result = await db.query<Medication>(sql, [medicationId]);
+    const [medication] = result.rows;
+
+    if (!medication) throw new ClientError(404, 'no medication found');
+
+    let medicationToUpdate = { ...medication };
+    if (operation === 'decrement') {
+      medicationToUpdate = {
+        ...medication,
+        remaining: medication.remaining - 1,
+      };
+    } else if (operation === 'increment') {
+      medicationToUpdate = {
+        ...medication,
+        remaining: medication.remaining + 1,
+      };
+    }
+    const { remaining, id } = medicationToUpdate;
+    const sql2 = `
+      update "medications"
+        set "remaining" = $1
+        where "id" = $2
+        returning *;
+    `;
+    const result2 = await db.query<Medication>(sql2, [remaining, id]);
+    const [updatedMedication] = result2.rows;
+    if (!updatedMedication) throw new ClientError(404, 'No medication found');
+    res.status(200).json(updatedMedication);
   } catch (err) {
     next(err);
   }
