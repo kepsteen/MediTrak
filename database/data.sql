@@ -3,8 +3,8 @@
 
 -- EXAMPLE:
 
-insert into "users" ("username", "email", "role")
-  values ('cody', 'test@test.com', 'Patient');
+insert into "users" ("username", "hashedPassword", "role")
+  values ('cody', 'hashbrowns', 'Patient');
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
 VALUES (1, 'Tylenol', '500 mg', 'Capsule', 'For headaches', 'Dr. Smith', 30, 30, true, 1);

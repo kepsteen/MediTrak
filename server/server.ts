@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Remove when used */
 import 'dotenv/config';
 import express from 'express';
-import pg, { Client } from 'pg';
+import pg from 'pg';
+import argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware } from './lib/index.js';
 
 type Medication = {
@@ -26,6 +28,18 @@ type Schedule = {
   name: string;
   dosage: string;
   form: string;
+};
+
+type User = {
+  id: number;
+  username: string;
+  hashedPassword: string;
+  role: string;
+};
+
+type Auth = {
+  username: string;
+  password: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -80,6 +94,9 @@ const db = new pg.Pool({
   },
 });
 
+const hashKey = process.env.TOKEN_SECRET;
+if (!hashKey) throw new Error('TOKEN_SECRET not found in .env');
+
 const app = express();
 
 // Create paths for static directories
@@ -90,6 +107,60 @@ app.use(express.static(reactStaticDir));
 // Static directory for file uploads server/public/
 app.use(express.static(uploadsStaticDir));
 app.use(express.json());
+
+app.post('/api/sign-up', async (req, res, next) => {
+  try {
+    const { username, password, role } = req.body;
+    if (!username || !password || !role) {
+      throw new ClientError(
+        400,
+        'username, password and role are required fields'
+      );
+    }
+    const hashedPassword = await argon2.hash(password);
+    const sql = `
+      insert into "users" ("username", "hashedPassword", "role")
+        values ($1, $2, $3)
+        returning "id", "username", "createdAt";
+    `;
+    const result = await db.query<User>(sql, [username, hashedPassword, role]);
+    const [user] = result.rows;
+    res.status(201).json(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/sign-in', async (req, res, next) => {
+  try {
+    const { username, password } = req.body as Partial<Auth>;
+    if (!username || !password) {
+      throw new ClientError(400, 'username and password are required fields');
+    }
+    const sql = `
+      select *
+        from "users"
+        where "username" = $1;
+    `;
+    const result = await db.query<User>(sql, [username]);
+    const [user] = result.rows;
+    if (!user) throw new ClientError(401, 'Invalid Login');
+    if (!(await argon2.verify(user.hashedPassword, password))) {
+      throw new ClientError(401, 'Invalid Password');
+    }
+    const payload = {
+      userId: user.id,
+      username: user.username,
+    };
+    const token = jwt.sign(payload, hashKey);
+    res.status(200).json({
+      user: payload,
+      token,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.post('/api/medications', async (req, res, next) => {
   try {

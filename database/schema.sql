@@ -20,7 +20,7 @@ CREATE TABLE "medicationSchedules" (
 CREATE TABLE "users" (
   "id" serial PRIMARY KEY,
   "username" text,
-  "email" text UNIQUE,
+  "hashedPassword" text,
   "role" text,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
