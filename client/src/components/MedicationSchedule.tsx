@@ -1,6 +1,6 @@
 import { AddScheduleForm } from '@/components/AddScheduleForm';
 import { Medication, Schedule } from '../../data';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { MedicationIcon } from './MedicationList';
@@ -8,6 +8,7 @@ import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
 import { MoveLeft, MoveRight } from 'lucide-react';
 import { Button } from './ui/button';
+import { readToken } from '@/lib/data';
 
 type Props = {
   medications: Medication[];
@@ -86,19 +87,30 @@ export function MedicationSchedule({
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [fetchError, setFetchError] = useState<unknown>();
   const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
+  const token = readToken();
 
-  async function fetchSchedules(day: number) {
-    try {
-      const response = await fetch('/api/schedule');
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
-      const schedules = (await response.json()) as Schedule[];
-      setDailySchedules(
-        schedules.filter((schedule) => schedule.daysOfWeek.includes(days[day]))
-      );
-    } catch (error) {
-      setFetchError(error);
-    }
-  }
+  const fetchSchedules = useCallback(
+    async (day: number) => {
+      try {
+        const response = await fetch('/api/schedule', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok)
+          throw new Error(`Response status: ${response.status}`);
+        const schedules = (await response.json()) as Schedule[];
+        setDailySchedules(
+          schedules.filter((schedule) =>
+            schedule.daysOfWeek.includes(days[day])
+          )
+        );
+      } catch (error) {
+        setFetchError(error);
+      }
+    },
+    [token]
+  );
 
   const selectedDateString = `${days[selectedDateObj.getDay()]} ${
     months[selectedDateObj.getMonth()]
@@ -108,7 +120,7 @@ export function MedicationSchedule({
   useEffect(() => {
     setSelectedDateObj(selectedDateObj);
     fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj]);
+  }, [selectedDateObj, fetchSchedules]);
 
   useEffect(() => {
     setUnscheduledMeds(

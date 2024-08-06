@@ -80,7 +80,10 @@ export function MedicationList({ medications, error }: Props) {
   return (
     <>
       <section className="container pb-[40px] ">
-        <div className="flex flex-wrap gap-2 items-center justify-center min-[400px]:justify-between button__group">
+        <div
+          className={`flex flex-wrap gap-2 items-center justify-center ${
+            medications.length !== 0 && 'min-[400px]:justify-between'
+          }`}>
           <Link to="/medications/add">
             <Button size="md" variant="secondary">
               Add New Medication
@@ -90,13 +93,15 @@ export function MedicationList({ medications, error }: Props) {
               </span>
             </Button>
           </Link>
-          <Button
-            size="md"
-            variant="outline"
-            className="w-[6rem] my-2"
-            onClick={toggleAll}>
-            {isAllExpanded ? 'Close All' : 'Expand All'}
-          </Button>
+          {medications.length !== 0 && (
+            <Button
+              size="md"
+              variant="outline"
+              className="w-[6rem] my-2"
+              onClick={toggleAll}>
+              {isAllExpanded ? 'Close All' : 'Expand All'}
+            </Button>
+          )}
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (

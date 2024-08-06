@@ -5,18 +5,24 @@ import { LandingPage } from './pages/LandingPage';
 import { AddMedications } from './pages/AddMedications';
 import { Toaster } from './components/ui/toaster';
 import { MedicationsLayout } from './pages/MedicationsLayout';
+import { AuthPage } from './pages/AuthPage';
+import { UserProvider } from './components/UserContext';
 
 export default function App() {
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Header />}>
-          <Route index element={<LandingPage />} />
-          <Route path="medications" element={<MedicationsLayout />} />
-          <Route path="medications/add" element={<AddMedications />} />
-        </Route>
-      </Routes>
-      <Toaster />
+      <UserProvider>
+        <Routes>
+          <Route path="/" element={<Header />}>
+            <Route index element={<LandingPage />} />
+            <Route path="/sign-up" element={<AuthPage mode="sign-up" />} />
+            <Route path="/sign-in" element={<AuthPage mode="sign-in" />} />
+            <Route path="medications" element={<MedicationsLayout />} />
+            <Route path="medications/add" element={<AddMedications />} />
+          </Route>
+        </Routes>
+        <Toaster />
+      </UserProvider>
     </>
   );
 }
