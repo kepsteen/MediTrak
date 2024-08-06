@@ -10,8 +10,8 @@ export function LandingPage() {
         </h1>
         <div className=" img__wrapper img-sm md:img-md">
           <img
-            src="/images/pills-in-hand.webp"
-            alt=""
+            src="/pills-in-hand.webp"
+            alt="picture of pills in hand"
             className="rounded-full shadow-xl"
           />
         </div>

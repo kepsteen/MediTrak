@@ -9,6 +9,7 @@ export function MedStatusDot({ medicationId }: Props) {
   const [isClicked, setIsClicked] = useState(false);
   const [error, setError] = useState<unknown>();
   const token = readToken();
+  // Todo: move state of isClicked up to parent
 
   async function handleClick() {
     try {

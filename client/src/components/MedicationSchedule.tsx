@@ -88,7 +88,9 @@ export function MedicationSchedule({
   const [fetchError, setFetchError] = useState<unknown>();
   const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
   const token = readToken();
-
+  // Store state of clicked dots as an array of booleans in state
+  // Get the index of each dot to display the clicked status
+  // pass down is clicked state to each dot
   const fetchSchedules = useCallback(
     async (day: number) => {
       try {
