@@ -90,13 +90,15 @@ export function MedicationList({ medications, error }: Props) {
               </span>
             </Button>
           </Link>
-          <Button
-            size="md"
-            variant="outline"
-            className="w-[6rem] my-2"
-            onClick={toggleAll}>
-            {isAllExpanded ? 'Close All' : 'Expand All'}
-          </Button>
+          {medications.length !== 0 && (
+            <Button
+              size="md"
+              variant="outline"
+              className="w-[6rem] my-2"
+              onClick={toggleAll}>
+              {isAllExpanded ? 'Close All' : 'Expand All'}
+            </Button>
+          )}
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (

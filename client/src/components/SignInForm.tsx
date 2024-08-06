@@ -42,7 +42,7 @@ export function SignInForm() {
       const { user, token } = (await response.json()) as AuthData;
       handleSignIn(user, token);
       toast({ title: `User ${username} successfully logged in.` });
-      navigate('/');
+      navigate('/medications');
     } catch (error) {
       setError(error);
     }
@@ -89,7 +89,7 @@ export function SignInForm() {
               <Button className="w-full bg-redblack">Sign in</Button>
               <div>
                 Don't have an account yet?{' '}
-                <Link to="/sign-up" className="font-bold">
+                <Link to="/sign-up" className="font-bold text-ruby">
                   Sign Up
                 </Link>
               </div>

@@ -85,7 +85,7 @@ export function RegistrationForm() {
       <section className="container h-screen flex items-center pt-[110px]">
         <Card className="max-w-sm mx-auto">
           <CardHeader>
-            <CardTitle className="text-2xl text-redblack">Login</CardTitle>
+            <CardTitle className="text-2xl text-redblack">Register</CardTitle>
             <CardDescription>
               Enter your information to create an account.
             </CardDescription>
@@ -137,7 +137,7 @@ export function RegistrationForm() {
                 <div>
                   <Button className="w-full bg-redblack">Sign Up</Button>
                   <span>Already have an account? </span>
-                  <Link to="/sign-in" className="font-bold">
+                  <Link to="/sign-in" className="font-bold text-ruby">
                     Sign In
                   </Link>
                 </div>

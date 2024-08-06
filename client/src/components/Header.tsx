@@ -2,14 +2,16 @@ import { Pill, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 import { Link } from 'react-router-dom';
+import { useUser } from './useUser';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const { user, handleSignOut } = useUser();
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
+      if (window.scrollY > 0) {
         setHasScrolled(true);
       } else {
         setHasScrolled(false);
@@ -64,9 +66,23 @@ export function Header() {
               </Link>
             </li>
             <li>
-              <span className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
-                Profile <UserRound size={32} />
-              </span>
+              {!user ? (
+                <Link
+                  to="/sign-up"
+                  onClick={handleClick}
+                  className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
+                  Register / Sign in <UserRound size={32} />
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleClick();
+                    handleSignOut();
+                  }}
+                  className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
+                  Sign out <UserRound size={32} />
+                </button>
+              )}
             </li>
           </ul>
         </nav>

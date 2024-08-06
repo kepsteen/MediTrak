@@ -22,6 +22,7 @@ import {
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
+import { useUser } from './useUser';
 
 const formSchema = z
   .object({
@@ -72,10 +73,11 @@ export function AddMedForm() {
     },
   });
   const { toast } = useToast();
+  const { user } = useUser();
   const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const newMedication = { ...values, scheduled: false, userId: 1 };
+    const newMedication = { ...values, scheduled: false, userId: user?.userId };
     for (const key in newMedication) {
       if (newMedication[key] === '') newMedication[key] = null;
     }
