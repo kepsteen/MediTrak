@@ -80,7 +80,10 @@ export function MedicationList({ medications, error }: Props) {
   return (
     <>
       <section className="container pb-[40px] ">
-        <div className="flex flex-wrap gap-2 items-center justify-center min-[400px]:justify-between button__group">
+        <div
+          className={`flex flex-wrap gap-2 items-center justify-center ${
+            medications.length !== 0 && 'min-[400px]:justify-between'
+          }`}>
           <Link to="/medications/add">
             <Button size="md" variant="secondary">
               Add New Medication

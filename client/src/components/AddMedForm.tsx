@@ -23,6 +23,7 @@ import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
 import { useUser } from './useUser';
+import { readToken } from '@/lib/data';
 
 const formSchema = z
   .object({
@@ -75,6 +76,7 @@ export function AddMedForm() {
   const { toast } = useToast();
   const { user } = useUser();
   const navigate = useNavigate();
+  const token = readToken();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, scheduled: false, userId: user?.userId };
@@ -83,7 +85,10 @@ export function AddMedForm() {
     }
     const response = await fetch('/api/medications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(newMedication),
     });
     if (!response.ok) throw new Error(`Response status: ${response.status}`);

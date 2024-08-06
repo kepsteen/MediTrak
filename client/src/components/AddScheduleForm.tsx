@@ -17,6 +17,8 @@ import { Checkbox } from './ui/checkbox';
 import React, { useEffect, useState } from 'react';
 import { Medication } from 'data';
 import { Progress } from '@/components/ui/progress';
+import { readToken } from '@/lib/data';
+import { useUser } from './useUser';
 
 const days = [
   {
@@ -62,6 +64,8 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
   const [error, setError] = useState<unknown>();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const token = readToken();
+  const { user } = useUser();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -100,7 +104,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
           medicationId: medication.id,
           timesPerDay: parseInt(timesPerDay),
           daysOfWeek: daysAdded,
-          userId: 1,
+          userId: user?.userId,
           name: medication.name,
           dosage: medication.dosage,
           form: medication.form,
@@ -108,7 +112,10 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
 
         const response = await fetch('/api/schedule', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(newSchedule),
         });
         if (!response.ok)

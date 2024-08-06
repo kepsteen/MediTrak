@@ -1,3 +1,4 @@
+import { readToken } from '@/lib/data';
 import { useState } from 'react';
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
 export function MedStatusDot({ medicationId }: Props) {
   const [isClicked, setIsClicked] = useState(false);
   const [error, setError] = useState<unknown>();
+  const token = readToken();
 
   async function handleClick() {
     try {
@@ -17,6 +19,7 @@ export function MedStatusDot({ medicationId }: Props) {
           method: 'PUT',
           headers: {
             'Content-type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(body),
         }
