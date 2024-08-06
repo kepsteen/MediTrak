@@ -13,6 +13,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, useUser } from './useUser';
 import { useToast } from './ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 type AuthData = {
   user: User;
@@ -22,7 +24,7 @@ type AuthData = {
 export function SignInForm() {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<unknown>();
+  const [error, setError] = useState<string>();
   const { handleSignIn } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -38,18 +40,16 @@ export function SignInForm() {
         },
         body: JSON.stringify(checkUser),
       });
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
       const { user, token } = (await response.json()) as AuthData;
       handleSignIn(user, token);
       toast({ title: `User ${username} successfully logged in.` });
       navigate('/medications');
     } catch (error) {
-      setError(error);
+      setError(`${error}`);
     }
-  }
-
-  if (error) {
-    return <p>{`Error signing in: ${error}`}</p>;
   }
 
   return (
@@ -64,6 +64,15 @@ export function SignInForm() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Your username or password is incorrect.
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="username">Username</Label>
                 <Input

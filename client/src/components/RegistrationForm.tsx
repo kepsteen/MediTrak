@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/form';
 import { useState } from 'react';
 import { useToast } from './ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const formSchema = z
   .object({
@@ -46,7 +48,7 @@ const formSchema = z
   );
 
 export function RegistrationForm() {
-  const [error, setError] = useState<unknown>();
+  const [error, setError] = useState<string>();
   const { toast } = useToast();
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -68,16 +70,18 @@ export function RegistrationForm() {
         },
         body: JSON.stringify(newUser),
       });
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
+      if (!response.ok) {
+        if (response.status === 409) {
+          setError(`Username ${values.username} is already taken.`);
+          return;
+        }
+        throw new Error(`Response status: ${response.status}`);
+      }
       toast({ title: `Successfully created account ${values.username}` });
       navigate('/sign-in');
     } catch (error) {
-      setError(error);
+      setError(String(error));
     }
-  }
-
-  if (error) {
-    return <p>{`Error: ${error}`}</p>;
   }
 
   return (
@@ -91,6 +95,13 @@ export function RegistrationForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="w-4 h-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
