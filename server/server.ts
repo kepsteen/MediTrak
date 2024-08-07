@@ -232,8 +232,9 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
     validateSchedule(req.body);
     const {
       medicationId,
-      timesPerDay,
-      daysOfWeek,
+      timeOfDay,
+      dayOfWeek,
+      taken,
       userId,
       name,
       dosage,
@@ -241,14 +242,15 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
     } = req.body;
 
     const sql = `
-      insert into "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-        values ($1, $2, $3, $4, $5, $6, $7)
+      insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         returning *;
     `;
     const result = await db.query<Schedule>(sql, [
       medicationId,
-      timesPerDay,
-      daysOfWeek,
+      timeOfDay,
+      dayOfWeek,
+      taken,
       userId,
       name,
       dosage,

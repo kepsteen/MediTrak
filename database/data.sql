@@ -36,43 +36,130 @@ VALUES (1, 'Simvastatin', '20 mg', 'Tablet', 'For high cholesterol', 'Dr. Taylor
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
 VALUES (1, 'Levothyroxine', '75 mcg', 'Tablet', 'For hypothyroidism', 'Dr. Anderson', 90, 90, true, 1);
 
-
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (1, 2, '{Monday, Wednesday, Friday}', 1, 'Tylenol', '500 mg', 'Capsule')
+-- Tylenol
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (1, 'Morning', 'Monday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Monday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Monday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Monday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Tuesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Tuesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Tuesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Tuesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Wednesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Wednesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Wednesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Wednesday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Thursday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Thursday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Thursday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Thursday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Friday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Friday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Friday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Friday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Saturday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Saturday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Saturday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Saturday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Morning', 'Sunday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Noon', 'Sunday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Evening', 'Sunday', false, 1, 'Tylenol', '500 mg', 'Capsule'),
+       (1, 'Bed time', 'Sunday', false, 1, 'Tylenol', '500 mg', 'Capsule')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (2, 3, '{Tuesday, Thursday, Saturday}', 1, 'Amoxicillin', '250 mg', 'Tablet')
+-- Amoxicillin
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (2, 'Morning', 'Tuesday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Noon', 'Tuesday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Evening', 'Tuesday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Morning', 'Thursday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Noon', 'Thursday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Evening', 'Thursday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Morning', 'Saturday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Noon', 'Saturday', false, 1, 'Amoxicillin', '250 mg', 'Tablet'),
+       (2, 'Evening', 'Saturday', false, 1, 'Amoxicillin', '250 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (3, 1, '{Monday, Tuesday}', 1, 'Lisinopril', '10 mg', 'Tablet')
+-- Lisinopril
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (3, 'Morning', 'Monday', false, 1, 'Lisinopril', '10 mg', 'Tablet'),
+       (3, 'Morning', 'Tuesday', false, 1, 'Lisinopril', '10 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (4, 4, '{Wednesday, Friday, Sunday}', 1, 'Metformin', '500 mg', 'Tablet')
+-- Metformin
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (4, 'Morning', 'Wednesday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Noon', 'Wednesday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Evening', 'Wednesday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Bed time', 'Wednesday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Morning', 'Friday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Noon', 'Friday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Evening', 'Friday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Bed time', 'Friday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Morning', 'Sunday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Noon', 'Sunday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Evening', 'Sunday', false, 1, 'Metformin', '500 mg', 'Tablet'),
+       (4, 'Bed time', 'Sunday', false, 1, 'Metformin', '500 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (5, 2, '{Monday, Thursday}', 1, 'Sertraline', '50 mg', 'Tablet')
+-- Sertraline
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (5, 'Morning', 'Monday', false, 1, 'Sertraline', '50 mg', 'Tablet'),
+       (5, 'Evening', 'Monday', false, 1, 'Sertraline', '50 mg', 'Tablet'),
+       (5, 'Morning', 'Thursday', false, 1, 'Sertraline', '50 mg', 'Tablet'),
+       (5, 'Evening', 'Thursday', false, 1, 'Sertraline', '50 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (6, 3, '{Saturday, Sunday}', 1, 'Albuterol', '90 mcg', 'Inhaler')
+-- Albuterol
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (6, 'Morning', 'Saturday', false, 1, 'Albuterol', '90 mcg', 'Inhaler'),
+       (6, 'Noon', 'Saturday', false, 1, 'Albuterol', '90 mcg', 'Inhaler'),
+       (6, 'Evening', 'Saturday', false, 1, 'Albuterol', '90 mcg', 'Inhaler'),
+       (6, 'Morning', 'Sunday', false, 1, 'Albuterol', '90 mcg', 'Inhaler'),
+       (6, 'Noon', 'Sunday', false, 1, 'Albuterol', '90 mcg', 'Inhaler'),
+       (6, 'Evening', 'Sunday', false, 1, 'Albuterol', '90 mcg', 'Inhaler')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (7, 1, '{Wednesday, Saturday}', 1, 'Omeprazole', '20 mg', 'Capsule')
+-- Omeprazole
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (7, 'Morning', 'Wednesday', false, 1, 'Omeprazole', '20 mg', 'Capsule'),
+       (7, 'Morning', 'Saturday', false, 1, 'Omeprazole', '20 mg', 'Capsule')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (8, 4, '{Tuesday, Thursday, Sunday}', 1, 'Ibuprofen', '400 mg', 'Tablet')
+-- Ibuprofen
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (8, 'Morning', 'Tuesday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Noon', 'Tuesday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Evening', 'Tuesday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Bed time', 'Tuesday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Morning', 'Thursday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Noon', 'Thursday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Evening', 'Thursday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Bed time', 'Thursday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Morning', 'Sunday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Noon', 'Sunday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Evening', 'Sunday', false, 1, 'Ibuprofen', '400 mg', 'Tablet'),
+       (8, 'Bed time', 'Sunday', false, 1, 'Ibuprofen', '400 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (9, 2, '{Monday, Friday}', 1, 'Simvastatin', '20 mg', 'Tablet')
+-- Simvastatin
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (9, 'Morning', 'Monday', false, 1, 'Simvastatin', '20 mg', 'Tablet'),
+       (9, 'Evening', 'Monday', false, 1, 'Simvastatin', '20 mg', 'Tablet'),
+       (9, 'Morning', 'Friday', false, 1, 'Simvastatin', '20 mg', 'Tablet'),
+       (9, 'Evening', 'Friday', false, 1, 'Simvastatin', '20 mg', 'Tablet')
 RETURNING *;
 
-INSERT INTO "medicationSchedules" ("medicationId", "timesPerDay", "daysOfWeek", "userId", "name", "dosage", "form")
-VALUES (10, 3, '{Tuesday, Thursday, Saturday}', 1, 'Levothyroxine', '75 mcg', 'Tablet')
+-- Levothyroxine
+INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+VALUES (10, 'Morning', 'Tuesday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Noon', 'Tuesday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Evening', 'Tuesday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Morning', 'Thursday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Noon', 'Thursday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Evening', 'Thursday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Morning', 'Saturday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Noon', 'Saturday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet'),
+       (10, 'Evening', 'Saturday', false, 1, 'Levothyroxine', '75 mcg', 'Tablet')
 RETURNING *;

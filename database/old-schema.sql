@@ -1,22 +1,27 @@
+set client_min_messages to warning;
+
+-- DANGER: this is NOT how to do it in the real world.
+-- `drop schema` INSTANTLY ERASES EVERYTHING.
+drop schema "public" cascade;
+
+create schema "public";
+
 CREATE TABLE "medicationSchedules" (
   "id" serial PRIMARY KEY,
   "medicationId" integer,
   "timesPerDay" integer,
-  "timeOfDay" ENUM(Morning,Noon,Evening,Bedtime),
-  "userId" integer
-);
-
-CREATE TABLE "scheduleDays" (
-  "id" serial PRIMARY KEY,
-  "scheduleId" integer,
-  "dayOfWeek" enum(Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday)
+  "daysOfWeek" varchar(255)[],
+  "userId" integer,
+  "name" text,
+  "dosage" text,
+  "form" text
 );
 
 CREATE TABLE "users" (
   "id" serial PRIMARY KEY,
-  "username" text,
-  "email" text UNIQUE,
-  "role" enum(Patient,Caregiver),
+  "username" text UNIQUE,
+  "hashedPassword" text,
+  "role" text,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -30,6 +35,7 @@ CREATE TABLE "medications" (
   "prescriber" text,
   "amount" integer,
   "remaining" integer,
+  "scheduled" boolean,
   "userId" integer,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
@@ -59,10 +65,6 @@ COMMENT ON COLUMN "medications"."notes" IS 'Any notes about the med';
 ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("id");
 
 ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
-
-ALTER TABLE "scheduleDays" ADD FOREIGN KEY ("scheduleId") REFERENCES "medicationSchedules" ("id");
-
-ALTER TABLE "medications" ADD FOREIGN KEY ("rxcui") REFERENCES "rxNormConcepts" ("rxcui");
 
 ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
 
