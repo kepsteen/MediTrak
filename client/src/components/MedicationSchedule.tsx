@@ -1,20 +1,13 @@
-import { AddScheduleForm } from '@/components/AddScheduleForm';
-import { Medication, Schedule } from '../../data';
-import { useCallback, useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@radix-ui/react-select';
+import { MoveLeft, MoveRight } from 'lucide-react';
 import { MedicationIcon } from './MedicationList';
+import { Button } from './ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
-import { MoveLeft, MoveRight } from 'lucide-react';
-import { Button } from './ui/button';
+import { useCallback, useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
-
-type Props = {
-  medications: Medication[];
-  error: unknown;
-  updateMedication: (medication: Medication) => void;
-};
+import { Schedule } from 'data';
 
 const days = [
   'Sunday',
@@ -76,21 +69,14 @@ const dates = [
   '31st',
 ];
 
-const medTimes = ['Morning', 'Noon', 'Evening', 'Before Bed'];
+const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
-export function MedicationSchedule({
-  medications,
-  error,
-  updateMedication,
-}: Props) {
+export function MedicationSchedule() {
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
-  const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [fetchError, setFetchError] = useState<unknown>();
   const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
   const token = readToken();
-  // Store state of clicked dots as an array of booleans in state
-  // Get the index of each dot to display the clicked status
-  // pass down is clicked state to each dot
+
   const fetchSchedules = useCallback(
     async (day: number) => {
       try {
@@ -113,29 +99,15 @@ export function MedicationSchedule({
     [token]
   );
 
-  const selectedDateString = `${days[selectedDateObj.getDay()]} ${
-    months[selectedDateObj.getMonth()]
-  }, ${dates[selectedDateObj.getDate()]}`;
-  const currentDateObj = new Date();
-
   useEffect(() => {
     setSelectedDateObj(selectedDateObj);
     fetchSchedules(selectedDateObj.getDay());
   }, [selectedDateObj, fetchSchedules]);
 
-  useEffect(() => {
-    setUnscheduledMeds(
-      medications.filter((medication) => !medication.scheduled)
-    );
-  }, [medications]);
-
-  async function handleScheduleComplete(medication: Medication) {
-    const updatedMedication = { ...medication, scheduled: true };
-    updateMedication(updatedMedication);
-    setUnscheduledMeds((prevMeds) =>
-      prevMeds.filter((med) => med.id !== medication.id)
-    );
-  }
+  const selectedDateString = `${days[selectedDateObj.getDay()]} ${
+    months[selectedDateObj.getMonth()]
+  }, ${dates[selectedDateObj.getDate()]}`;
+  const currentDateObj = new Date();
 
   function handleDateChange(direction: string) {
     if (direction === 'previous') {
@@ -149,23 +121,15 @@ export function MedicationSchedule({
     }
   }
 
-  if (error || fetchError) {
+  if (fetchError) {
     return (
       <>
-        <p>{`Error : ${error}`}</p>
         <p>{`fetchError : ${fetchError}`}</p>
       </>
     );
   }
   return (
     <>
-      {unScheduledMeds.length > 0 && (
-        <AddScheduleForm
-          medication={unScheduledMeds[0]}
-          onScheduleComplete={handleScheduleComplete}
-        />
-      )}
-
       <Card className="container max-w-[500px]">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -188,13 +152,13 @@ export function MedicationSchedule({
         </CardHeader>
         <CardContent>
           <div>
-            {medTimes.map((medTime, index) => (
+            {medTimes.map((medTime) => (
               <div key={medTime}>
                 <h3 className="text-xl font-semibold">{medTime}</h3>
                 <Separator />
                 <ul className="pl-4 my-4">
                   {dailySchedules.map((schedule) => {
-                    if (schedule.timesPerDay >= index + 1) {
+                    if (schedule.timeOfDay === medTime) {
                       return (
                         <li
                           key={`${medTime}${schedule.id}`}
@@ -213,6 +177,7 @@ export function MedicationSchedule({
                             currentDateObj.valueOf() && (
                             <MedStatusDot
                               medicationId={schedule.medicationId}
+                              isClicked={schedule.taken}
                             />
                           )}
                         </li>

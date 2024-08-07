@@ -3,17 +3,19 @@ import { useState } from 'react';
 
 type Props = {
   medicationId: number;
+  isClicked: boolean;
 };
 
-export function MedStatusDot({ medicationId }: Props) {
-  const [isClicked, setIsClicked] = useState(false);
+export function MedStatusDot({ medicationId, isClicked }: Props) {
   const [error, setError] = useState<unknown>();
   const token = readToken();
+  const [isClickedTemp, setIsClickedTemp] = useState(false);
   // Todo: move state of isClicked up to parent
-
+  // Todo: Move handleClick up to parent and pass it down
+  console.log(isClicked);
   async function handleClick() {
     try {
-      const body = { operation: isClicked ? 'increment' : 'decrement' };
+      const body = { operation: isClickedTemp ? 'increment' : 'decrement' };
       const response = await fetch(
         `/api/medications/${medicationId}/inventory`,
         {
@@ -29,7 +31,7 @@ export function MedStatusDot({ medicationId }: Props) {
     } catch (error) {
       setError(error);
     } finally {
-      setIsClicked((prevState) => !prevState);
+      setIsClickedTemp((prevState) => !prevState);
     }
   }
   if (error) {
@@ -45,9 +47,9 @@ export function MedStatusDot({ medicationId }: Props) {
       <div
         onClick={handleClick}
         className={`w-[24px] h-[24px] border shadow-md transition-ease border-gray-400 rounded-full ${
-          isClicked ? 'bg-emerald-600' : 'bg-white'
+          isClickedTemp ? 'bg-emerald-600' : 'bg-white'
         }`}>
-        {isClicked}
+        {isClickedTemp}
       </div>
     </>
   );

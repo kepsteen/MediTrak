@@ -17,7 +17,7 @@ export type Schedule = {
   medicationId: number;
   timeOfDay: string;
   dayOfWeek: string;
-  take: boolean;
+  taken: boolean;
   userId: number;
   name: string;
   dosage: string;
