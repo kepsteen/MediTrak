@@ -232,32 +232,52 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
     validateSchedule(req.body);
     const {
       medicationId,
-      timeOfDay,
-      dayOfWeek,
-      taken,
+      timesPerDay,
+      daysOfWeek,
       userId,
       name,
       dosage,
       form,
     } = req.body;
 
+    const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
+
+    for (const day of daysOfWeek) {
+      for (let i = 0; i < timesPerDay.length; i++) {
+        const timeOfDay = timeOptions[i + 1];
+        const sql = `
+          insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            returning *;
+        `;
+        const result = await db.query<Schedule>(sql, [
+          medicationId,
+          timeOfDay,
+          day,
+          false,
+          userId,
+          name,
+          dosage,
+          form,
+        ]);
+        res.status(201).json(result.rows);
+      }
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/schedule', authMiddleware, async (req, res, next) => {
+  try {
     const sql = `
-      insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        returning *;
+      select *
+        from "medicationSchedules"
+        where "userId" = $1;
     `;
-    const result = await db.query<Schedule>(sql, [
-      medicationId,
-      timeOfDay,
-      dayOfWeek,
-      taken,
-      userId,
-      name,
-      dosage,
-      form,
-    ]);
+    const result = await db.query(sql, [req.user?.userId]);
     const schedules = result.rows;
-    res.status(201).json(schedules);
+    res.json(schedules);
   } catch (err) {
     next(err);
   }
@@ -281,21 +301,6 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
     if (!medication)
       throw new ClientError(404, `failed to update scheduled status`);
     res.status(200).json(medication);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.get('/api/schedule', authMiddleware, async (req, res, next) => {
-  try {
-    const sql = `
-      select *
-        from "medicationSchedules"
-        where "userId" = $1;
-    `;
-    const result = await db.query(sql, [req.user?.userId]);
-    const schedules = result.rows;
-    res.json(schedules);
   } catch (err) {
     next(err);
   }

@@ -102,10 +102,9 @@ export function MedicationSchedule({
         if (!response.ok)
           throw new Error(`Response status: ${response.status}`);
         const schedules = (await response.json()) as Schedule[];
+        console.log('schedules', schedules);
         setDailySchedules(
-          schedules.filter((schedule) =>
-            schedule.daysOfWeek.includes(days[day])
-          )
+          schedules.filter((schedule) => schedule.dayOfWeek === days[day])
         );
       } catch (error) {
         setFetchError(error);
