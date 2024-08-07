@@ -17,9 +17,19 @@ export type Schedule = {
   medicationId: number;
   timeOfDay: string;
   dayOfWeek: string;
-  taken: boolean;
   userId: number;
   name: string;
   dosage: string;
   form: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Log = {
+  id: number;
+  medicationId: number;
+  userId: number;
+  scheduleId: number;
+  taken: boolean;
+  updatedAt: string;
 };

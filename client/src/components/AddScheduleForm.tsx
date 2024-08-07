@@ -95,7 +95,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
     setIsLoading(true);
     setProgress(0);
     try {
-      if (Number(timesPerDay) !== 0) {
+      if (+timesPerDay > 0) {
         const daysAdded: string[] = [];
         for (let i = 0; i < checkedState.length; i++) {
           if (checkedState[i]) daysAdded.push(days[i].label);

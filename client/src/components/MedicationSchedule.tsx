@@ -1,13 +1,13 @@
-import { Separator } from '@radix-ui/react-select';
 import { MoveLeft, MoveRight } from 'lucide-react';
 import { MedicationIcon } from './MedicationList';
 import { Button } from './ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
-import { Schedule } from 'data';
+import { Log, Schedule } from 'data';
+import { Separator } from './ui/separator';
 
 const days = [
   'Sunday',
@@ -69,40 +69,38 @@ const dates = [
   '31st',
 ];
 
+type ScheduleLog = Schedule & Log;
+
 const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
 export function MedicationSchedule() {
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
   const [fetchError, setFetchError] = useState<unknown>();
-  const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
+  const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
+  const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
+  const [error, setError] = useState<unknown>();
   const token = readToken();
 
-  const fetchSchedules = useCallback(
-    async (day: number) => {
+  useEffect(() => {
+    const fetchSchedules = async (day: number) => {
       try {
-        const response = await fetch('/api/schedule', {
+        const response = await fetch(`/api/schedule/${days[day]}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         if (!response.ok)
           throw new Error(`Response status: ${response.status}`);
-        const schedules = (await response.json()) as Schedule[];
-        console.log('schedules', schedules);
-        setDailySchedules(
-          schedules.filter((schedule) => schedule.dayOfWeek === days[day])
-        );
+        const schedules = (await response.json()) as ScheduleLog[];
+        setDailySchedules(schedules);
+        setDotStatusStates(schedules.map((item) => item.taken));
       } catch (error) {
         setFetchError(error);
       }
-    },
-    [token]
-  );
-
-  useEffect(() => {
+    };
     setSelectedDateObj(selectedDateObj);
     fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj, fetchSchedules]);
+  }, [selectedDateObj, token]);
 
   const selectedDateString = `${days[selectedDateObj.getDay()]} ${
     months[selectedDateObj.getMonth()]
@@ -121,10 +119,50 @@ export function MedicationSchedule() {
     }
   }
 
-  if (fetchError) {
+  async function handleClick(
+    medicationId: number,
+    index: number,
+    scheduleId: number
+  ) {
+    try {
+      const body = {
+        operation: dotStatusStates[index] ? 'increment' : 'decrement',
+      };
+      const response = await fetch(
+        `/api/medications/${medicationId}/inventory`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      if (!response.ok) throw new Error(`Response: ${response.status}`);
+      const response2 = await fetch(`/api/log/${scheduleId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      if (!response2.ok) throw new Error(`Response: ${response.status}`);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setDotStatusStates((prevStates) =>
+        prevStates.map((state, i) => (i === index ? !state : state))
+      );
+    }
+  }
+
+  if (fetchError || error) {
     return (
       <>
         <p>{`fetchError : ${fetchError}`}</p>
+        <p>{`Error : ${error}`}</p>
       </>
     );
   }
@@ -157,11 +195,11 @@ export function MedicationSchedule() {
                 <h3 className="text-xl font-semibold">{medTime}</h3>
                 <Separator />
                 <ul className="pl-4 my-4">
-                  {dailySchedules.map((schedule) => {
+                  {dailySchedules.map((schedule, index) => {
                     if (schedule.timeOfDay === medTime) {
                       return (
                         <li
-                          key={`${medTime}${schedule.id}`}
+                          key={`${medTime}${schedule.id}${index}`}
                           className="flex items-center justify-between mb-2">
                           <HoverClickPopover
                             trigger={<span>{schedule.name}</span>}
@@ -169,7 +207,7 @@ export function MedicationSchedule() {
                               <div className="flex space-x-4">
                                 <MedicationIcon type={schedule.form} />
                                 <h4 className="text-sm font-semibold">
-                                  {`${schedule.name} ${schedule.dosage} ${schedule.form}`}
+                                  {`${schedule.name} ${schedule.dosage} ${schedule.form} ${dotStatusStates[index]}`}
                                 </h4>
                               </div>
                             }></HoverClickPopover>
@@ -177,7 +215,14 @@ export function MedicationSchedule() {
                             currentDateObj.valueOf() && (
                             <MedStatusDot
                               medicationId={schedule.medicationId}
-                              isClicked={schedule.taken}
+                              isClicked={dotStatusStates[index]}
+                              onClick={() =>
+                                handleClick(
+                                  schedule.medicationId,
+                                  index,
+                                  schedule.scheduleId
+                                )
+                              }
                             />
                           )}
                         </li>

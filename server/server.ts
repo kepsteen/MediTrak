@@ -19,15 +19,39 @@ type Medication = {
   createdAt: string;
 };
 
-type Schedule = {
-  id: number;
+type ScheduleInput = {
+  scheduleId: number;
   medicationId: number;
-  timesPerDay: number;
-  daysOfWeek: string[];
+  timesPerDay: string;
+  daysOfWeek: string;
   userId: number;
   name: string;
   dosage: string;
   form: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type ScheduleOutput = {
+  scheduleId: number;
+  medicationId: number;
+  timeOfDay: string;
+  dayOfWeek: string;
+  userId: number;
+  name: string;
+  dosage: string;
+  form: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type Log = {
+  id: number;
+  medicationId: number;
+  userId: number;
+  scheduleId: number;
+  taken: boolean;
+  updatedAt: string;
 };
 
 type User = {
@@ -66,11 +90,11 @@ function validateMedication(reqBody: unknown): void {
 
 function validateSchedule(reqBody: unknown): void {
   const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
-    reqBody as Schedule;
+    reqBody as ScheduleInput;
   if (!Number.isInteger(medicationId)) {
     throw new ClientError(400, 'Valid medicationId (integer) is required');
   }
-  if (!Number.isInteger(timesPerDay)) {
+  if (!Number.isInteger(+timesPerDay)) {
     throw new ClientError(400, 'Valid timesPerDay (integer) is required');
   }
   if (
@@ -242,41 +266,94 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
 
     const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
+    const scheduleValues = [];
+    const logValues = [];
     for (const day of daysOfWeek) {
-      for (let i = 0; i < timesPerDay.length; i++) {
-        const timeOfDay = timeOptions[i + 1];
-        const sql = `
-          insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "taken", "userId", "name", "dosage", "form")
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            returning *;
-        `;
-        const result = await db.query<Schedule>(sql, [
+      for (let i = 0; i < timesPerDay; i++) {
+        const timeOfDay = timeOptions[i];
+        scheduleValues.push([
           medicationId,
           timeOfDay,
           day,
-          false,
           userId,
           name,
           dosage,
           form,
         ]);
-        res.status(201).json(result.rows);
       }
     }
+    const scheduleSql = `
+      INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "userId", "name", "dosage", "form")
+      VALUES ${scheduleValues
+        .map(
+          (_, index) =>
+            `($${index * 7 + 1}, $${index * 7 + 2}, $${index * 7 + 3}, $${
+              index * 7 + 4
+            }, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`
+        )
+        .join(', ')}
+      RETURNING *;
+    `;
+    const scheduleResult = await db.query(scheduleSql, scheduleValues.flat());
+    for (const schedule of scheduleResult.rows) {
+      logValues.push([medicationId, userId, schedule.scheduleId, false]);
+    }
+    const logSql = `
+      INSERT INTO "medicationLogs" ("medicationId", "userId", "scheduleId", "taken")
+      VALUES ${logValues
+        .map(
+          (_, index) =>
+            `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
+              index * 4 + 4
+            })`
+        )
+        .join(', ')}
+      RETURNING *;
+    `;
+    const logResult = await db.query(logSql, logValues.flat());
+    res.status(201).json(scheduleResult.rows);
   } catch (err) {
     next(err);
   }
 });
 
-app.get('/api/schedule', authMiddleware, async (req, res, next) => {
+app.get('/api/schedule/:day', authMiddleware, async (req, res, next) => {
   try {
+    const { day } = req.params;
     const sql = `
       select *
-        from "medicationSchedules"
-        where "userId" = $1;
+        from "medicationSchedules" as "ms"
+        join "medicationLogs" as "ml" using ("scheduleId")
+        where "ms"."userId" = $1 AND "dayOfWeek" = $2;
     `;
-    const result = await db.query(sql, [req.user?.userId]);
+    const result = await db.query<ScheduleOutput>(sql, [req.user?.userId, day]);
     const schedules = result.rows;
+    if (schedules.length > 0) {
+      for (const schedule of schedules) {
+        const updatedAt = new Date(schedule.updatedAt);
+        const currentDate = new Date();
+        const differenceInDays: number =
+          (currentDate.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+        if (differenceInDays > 7) {
+          const sql = `
+            update "medicationLogs"
+              set "taken" = false
+              where "scheduleId = $1
+              returning *;
+          `;
+          const result = await db.query<Log>(sql, [schedule.scheduleId]);
+          const sql2 = `
+            update "medicationSchedules"
+              set "updatedAt" = NOW()
+              where "scheduleId" = $1
+              returning *;
+          `;
+          const result2 = await db.query<ScheduleOutput>(sql2, [
+            schedule.scheduleId,
+          ]);
+        }
+      }
+    }
     res.json(schedules);
   } catch (err) {
     next(err);
@@ -360,6 +437,34 @@ app.put(
  * It responds with `index.html` to support page refreshes with React Router.
  * This must be the _last_ route, just before errorMiddleware.
  */
+
+app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
+  try {
+    const { scheduleId } = req.params;
+    const { operation } = req.body;
+    let taken;
+    switch (operation) {
+      case 'decrement':
+        taken = true;
+        break;
+      case 'increment':
+        taken = false;
+        break;
+    }
+    const sql = `
+      update "medicationLogs"
+        set "taken" = $1
+        where "scheduleId" = $2
+        returning *;
+    `;
+    const result = await db.query<Log>(sql, [taken, scheduleId]);
+    const [log] = result.rows;
+    if (!log) throw new ClientError(404, `Log ${scheduleId} not found`);
+    res.status(200).json(log);
+  } catch (err) {
+    next(err);
+  }
+});
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);
