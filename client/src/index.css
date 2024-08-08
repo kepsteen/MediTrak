@@ -16,11 +16,11 @@
   }
 
   .logo-text {
-    @apply text-[3rem] tracking-tighter md:text-[4rem];
+    @apply text-[2.5rem] tracking-tighter md:text-[3rem];
   }
 
   .menu-div {
-    @apply h-[0.25rem] bg-white rounded-md w-[26px] mx-auto;
+    @apply h-[0.2rem] bg-white rounded-md w-[1.25rem] md:h-[0.25rem] md:w-[1.5rem]  mx-auto;
   }
 
   .transition-ease {

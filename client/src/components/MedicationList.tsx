@@ -85,7 +85,7 @@ export function MedicationList({ medications, error }: Props) {
             medications.length !== 0 && 'min-[400px]:justify-between'
           }`}>
           <Link to="/medications/add">
-            <Button size="md" variant="secondary">
+            <Button size="md" className="bg-darkred">
               Add New Medication
               <span className="flex items-start ml-2">
                 <Pill size={24} />

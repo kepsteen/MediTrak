@@ -38,7 +38,7 @@ export function MedicationScheduleLayout({
     );
   }
   return (
-    <>
+    <section className="gap-10 mb-4 lg:flex">
       {unScheduledMeds.length > 0 && (
         <AddScheduleForm
           medication={unScheduledMeds[0]}
@@ -46,6 +46,6 @@ export function MedicationScheduleLayout({
         />
       )}
       <MedicationSchedule />
-    </>
+    </section>
   );
 }

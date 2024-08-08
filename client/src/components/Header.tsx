@@ -40,7 +40,7 @@ export function Header() {
           </h1>
         </Link>
         <button
-          className={`relative flex flex-col place-content-center gap-1 w-[3rem] h-[3rem] md:w-[4rem] md:h-[4rem] rounded-full bg-redblack hover:bg-ruby transition-ease ${
+          className={`relative flex flex-col place-content-center gap-[3px] w-[2.5rem] h-[2.5rem] md:w-[3rem] md:h-[3rem] rounded-full bg-darkred hover:bg-ruby transition-ease ${
             isOpen && 'opacity-0'
           }`}
           onClick={handleClick}>

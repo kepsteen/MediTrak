@@ -168,7 +168,7 @@ export function MedicationSchedule() {
   }
   return (
     <>
-      <Card className="container max-w-[500px]">
+      <Card className="container max-w-[500px] mt-4">
         <CardHeader>
           <div className="flex items-center justify-between">
             <Button
@@ -207,7 +207,7 @@ export function MedicationSchedule() {
                               <div className="flex space-x-4">
                                 <MedicationIcon type={schedule.form} />
                                 <h4 className="text-sm font-semibold">
-                                  {`${schedule.name} ${schedule.dosage} ${schedule.form} ${dotStatusStates[index]}`}
+                                  {`${schedule.name} ${schedule.dosage} ${schedule.form}`}
                                 </h4>
                               </div>
                             }></HoverClickPopover>
