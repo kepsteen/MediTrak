@@ -86,7 +86,7 @@ export function MedicationSchedule() {
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
   const [error, setError] = useState<unknown>();
   const token = readToken();
-
+  // const differenceInDays =
   useEffect(() => {
     const fetchSchedules = async (day: number) => {
       try {
@@ -112,6 +112,9 @@ export function MedicationSchedule() {
     months[selectedDateObj.getMonth()]
   }, ${dates[selectedDateObj.getDate()]}`;
   const currentDateObj = new Date();
+  const differenceInDays =
+    (currentDateObj.getTime() - selectedDateObj.getTime()) /
+    (1000 * 60 * 60 * 24);
 
   function handleDateChange(direction: string) {
     if (direction === 'previous') {
@@ -221,19 +224,20 @@ export function MedicationSchedule() {
                               </div>
                             }></HoverClickPopover>
                           {selectedDateObj.valueOf() <=
-                            currentDateObj.valueOf() && (
-                            <MedStatusDot
-                              medicationId={schedule.medicationId}
-                              isClicked={dotStatusStates[index]}
-                              onClick={() =>
-                                handleClick(
-                                  schedule.medicationId,
-                                  index,
-                                  schedule.scheduleId
-                                )
-                              }
-                            />
-                          )}
+                            currentDateObj.valueOf() &&
+                            differenceInDays < 7 && (
+                              <MedStatusDot
+                                medicationId={schedule.medicationId}
+                                isClicked={dotStatusStates[index]}
+                                onClick={() =>
+                                  handleClick(
+                                    schedule.medicationId,
+                                    index,
+                                    schedule.scheduleId
+                                  )
+                                }
+                              />
+                            )}
                         </li>
                       );
                     }
