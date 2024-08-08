@@ -1,4 +1,4 @@
-# full-stack-project
+# MediTrak
 
 A full stack TypeScript solo project.
 
