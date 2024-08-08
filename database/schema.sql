@@ -24,6 +24,9 @@ CREATE TABLE "users" (
   "username" text UNIQUE,
   "hashedPassword" text,
   "role" text,
+  "dateOfBirth" text,
+  "phoneNumber" text,
+  "notificationsEnabled" boolean,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -63,6 +66,8 @@ CREATE TABLE "rxNormConcepts" (
   "rxcui" integer PRIMARY KEY,
   "name" text
 );
+
+
 
 COMMENT ON COLUMN "medications"."notes" IS 'Any notes about the med';
 

@@ -14,16 +14,28 @@ import { z } from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useToast } from './ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CalendarDaysIcon } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import { Switch } from './ui/switch';
 
+const regexSpecialCharacter = new RegExp(
+  '[`!@#$%^&*()_+\\-=\\[\\]{};\':"\\\\|,.<>/?~\\s]'
+);
 const formSchema = z
   .object({
     username: z.string().min(2, {
@@ -33,6 +45,10 @@ const formSchema = z
       message: 'Password must be at least 8 characters.',
     }),
     confirmPassword: z.string(),
+    role: z.string(),
+    dob: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Invalid date format'),
+    phoneNumber: z.string().max(10),
+    notificationsEnabled: z.boolean(),
   })
   .refine(
     (data) => {
@@ -45,7 +61,37 @@ const formSchema = z
       message: 'Passwords must match',
       path: ['confirmPassword'],
     }
-  );
+  )
+  .superRefine(({ password }, checkPassComplexity) => {
+    const containsUppercase = (ch: string) => /[A-Z]/.test(ch);
+    const containsLowercase = (ch: string) => /[a-z]/.test(ch);
+    const containsSpecialChar = (ch: string) => regexSpecialCharacter.test(ch);
+    let countOfUpperCase = 0,
+      countOfLowerCase = 0,
+      countOfNumbers = 0,
+      countOfSpecialChar = 0;
+
+    for (let i = 0; i < password.length; i++) {
+      const ch = password.charAt(i);
+      if (!isNaN(+ch)) countOfNumbers++;
+      else if (containsUppercase(ch)) countOfUpperCase++;
+      else if (containsLowercase(ch)) countOfLowerCase++;
+      else if (containsSpecialChar(ch)) countOfSpecialChar++;
+    }
+
+    if (
+      countOfLowerCase < 1 ||
+      countOfUpperCase < 1 ||
+      countOfSpecialChar < 1 ||
+      countOfNumbers < 1
+    ) {
+      checkPassComplexity.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: 'Password does not meet complexity requirements.',
+      });
+    }
+  });
 
 export function RegistrationForm() {
   const [error, setError] = useState<string>();
@@ -57,12 +103,17 @@ export function RegistrationForm() {
       username: '',
       password: '',
       confirmPassword: '',
+      dob: '',
+      role: '',
+      phoneNumber: '',
+      notificationsEnabled: false,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log('clicked');
     try {
-      const newUser = { ...values, role: 'Patient' };
+      const newUser = { ...values };
       const response = await fetch('/api/sign-up', {
         method: 'POST',
         headers: {
@@ -82,11 +133,13 @@ export function RegistrationForm() {
     } catch (error) {
       setError(String(error));
     }
+
+    console.log('values', values);
   }
 
   return (
     <>
-      <section className="container h-screen flex items-center pt-[110px]">
+      <section className="container flex items-center pt-[110px] pb-[40px]">
         <Card className="max-w-sm mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl text-redblack">Register</CardTitle>
@@ -125,6 +178,11 @@ export function RegistrationForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Password</FormLabel>
+                      <FormDescription>
+                        Password must be at least 8 characters and contain an
+                        uppercase letter, lowercase letter, a number and a
+                        special character.
+                      </FormDescription>
                       <FormControl>
                         <Input type="password" {...field} />
                       </FormControl>
@@ -145,8 +203,102 @@ export function RegistrationForm() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="dob"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date of Birth</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            placeholder="01/01/1991"
+                            {...field}
+                            onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                              const input = e.target as HTMLInputElement;
+                              let value = input.value.replace(/\D/g, '');
+                              if (value.length > 2) {
+                                value = `${value.slice(0, 2)}/${value.slice(
+                                  2
+                                )}`;
+                              }
+                              if (value.length > 5) {
+                                value = `${value.slice(0, 5)}/${value.slice(
+                                  5
+                                )}`;
+                              }
+                              input.value = value;
+                            }}
+                          />
+                          <CalendarDaysIcon className="absolute w-5 h-5 -translate-y-1/2 right-3 top-1/2 text-muted-foreground" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Patient">Patient</SelectItem>
+                          <SelectItem value="Caregiver">Caregiver</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="notificationsEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Text Notifications
+                        </FormLabel>
+                        <FormDescription>
+                          Receive texts when medications are running low.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <div>
-                  <Button className="w-full bg-redblack">Sign Up</Button>
+                  <Button type="submit" className="w-full bg-redblack">
+                    Sign Up
+                  </Button>
                   <span>Already have an account? </span>
                   <Link to="/sign-in" className="font-bold text-ruby">
                     Sign In
