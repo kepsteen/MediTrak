@@ -1,7 +1,13 @@
 import { MoveLeft, MoveRight } from 'lucide-react';
 import { MedicationIcon } from './MedicationList';
 import { Button } from './ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from './ui/card';
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
 import { useEffect, useState } from 'react';
@@ -187,6 +193,9 @@ export function MedicationSchedule() {
               <MoveRight size={18} />
             </Button>
           </div>
+          <CardDescription className="text-center">
+            Click on the dots to log your medications.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div>
