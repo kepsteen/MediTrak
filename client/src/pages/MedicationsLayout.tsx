@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicationList } from '../components/MedicationList';
-import { MedicationSchedule } from '../components/MedicationSchedule';
+import { MedicationScheduleLayout } from '../components/MedicationScheduleLayout';
 import { useEffect, useState } from 'react';
 import { Medication } from '../../data';
 import { useUser } from '@/components/useUser';
@@ -71,7 +71,7 @@ export function MedicationsLayout() {
             <MedicationList medications={medications} error={error} />
           </TabsContent>
           <TabsContent value="schedule">
-            <MedicationSchedule
+            <MedicationScheduleLayout
               medications={medications}
               error={error}
               updateMedication={updateMedication}

@@ -1,20 +1,19 @@
-import { AddScheduleForm } from '@/components/AddScheduleForm';
-import { Medication, Schedule } from '../../data';
-import { useCallback, useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { MoveLeft, MoveRight } from 'lucide-react';
 import { MedicationIcon } from './MedicationList';
+import { Button } from './ui/button';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from './ui/card';
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
-import { MoveLeft, MoveRight } from 'lucide-react';
-import { Button } from './ui/button';
+import { useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
-
-type Props = {
-  medications: Medication[];
-  error: unknown;
-  updateMedication: (medication: Medication) => void;
-};
+import { Log, Schedule } from 'data';
+import { Separator } from './ui/separator';
 
 const days = [
   'Sunday',
@@ -76,65 +75,46 @@ const dates = [
   '31st',
 ];
 
-const medTimes = ['Morning', 'Noon', 'Evening', 'Before Bed'];
+type ScheduleLog = Schedule & Log;
 
-export function MedicationSchedule({
-  medications,
-  error,
-  updateMedication,
-}: Props) {
+const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
+
+export function MedicationSchedule() {
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
-  const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [fetchError, setFetchError] = useState<unknown>();
-  const [dailySchedules, setDailySchedules] = useState<Schedule[]>([]);
+  const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
+  const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
+  const [error, setError] = useState<unknown>();
   const token = readToken();
-
-  const fetchSchedules = useCallback(
-    async (day: number) => {
+  // const differenceInDays =
+  useEffect(() => {
+    const fetchSchedules = async (day: number) => {
       try {
-        const response = await fetch('/api/schedule', {
+        const response = await fetch(`/api/schedule/${days[day]}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         if (!response.ok)
           throw new Error(`Response status: ${response.status}`);
-        const schedules = (await response.json()) as Schedule[];
-        setDailySchedules(
-          schedules.filter((schedule) =>
-            schedule.daysOfWeek.includes(days[day])
-          )
-        );
+        const schedules = (await response.json()) as ScheduleLog[];
+        setDailySchedules(schedules);
+        setDotStatusStates(schedules.map((item) => item.taken));
       } catch (error) {
         setFetchError(error);
       }
-    },
-    [token]
-  );
+    };
+    setSelectedDateObj(selectedDateObj);
+    fetchSchedules(selectedDateObj.getDay());
+  }, [selectedDateObj, token]);
 
   const selectedDateString = `${days[selectedDateObj.getDay()]} ${
     months[selectedDateObj.getMonth()]
   }, ${dates[selectedDateObj.getDate()]}`;
   const currentDateObj = new Date();
-
-  useEffect(() => {
-    setSelectedDateObj(selectedDateObj);
-    fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj, fetchSchedules]);
-
-  useEffect(() => {
-    setUnscheduledMeds(
-      medications.filter((medication) => !medication.scheduled)
-    );
-  }, [medications]);
-
-  async function handleScheduleComplete(medication: Medication) {
-    const updatedMedication = { ...medication, scheduled: true };
-    updateMedication(updatedMedication);
-    setUnscheduledMeds((prevMeds) =>
-      prevMeds.filter((med) => med.id !== medication.id)
-    );
-  }
+  const differenceInDays =
+    (currentDateObj.getTime() - selectedDateObj.getTime()) /
+    (1000 * 60 * 60 * 24);
 
   function handleDateChange(direction: string) {
     if (direction === 'previous') {
@@ -148,24 +128,56 @@ export function MedicationSchedule({
     }
   }
 
-  if (error || fetchError) {
+  async function handleClick(
+    medicationId: number,
+    index: number,
+    scheduleId: number
+  ) {
+    try {
+      const body = {
+        operation: dotStatusStates[index] ? 'increment' : 'decrement',
+      };
+      const response = await fetch(
+        `/api/medications/${medicationId}/inventory`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      if (!response.ok) throw new Error(`Response: ${response.status}`);
+      const response2 = await fetch(`/api/log/${scheduleId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      if (!response2.ok) throw new Error(`Response: ${response.status}`);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setDotStatusStates((prevStates) =>
+        prevStates.map((state, i) => (i === index ? !state : state))
+      );
+    }
+  }
+
+  if (fetchError || error) {
     return (
       <>
-        <p>{`Error : ${error}`}</p>
         <p>{`fetchError : ${fetchError}`}</p>
+        <p>{`Error : ${error}`}</p>
       </>
     );
   }
   return (
     <>
-      {unScheduledMeds.length > 0 && (
-        <AddScheduleForm
-          medication={unScheduledMeds[0]}
-          onScheduleComplete={handleScheduleComplete}
-        />
-      )}
-
-      <Card className="container max-w-[500px]">
+      <Card className="container max-w-[500px] mt-4">
         <CardHeader>
           <div className="flex items-center justify-between">
             <Button
@@ -184,19 +196,22 @@ export function MedicationSchedule({
               <MoveRight size={18} />
             </Button>
           </div>
+          <CardDescription className="text-center">
+            Click on the dots to log your medications.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div>
-            {medTimes.map((medTime, index) => (
+            {medTimes.map((medTime) => (
               <div key={medTime}>
                 <h3 className="text-xl font-semibold">{medTime}</h3>
                 <Separator />
                 <ul className="pl-4 my-4">
-                  {dailySchedules.map((schedule) => {
-                    if (schedule.timesPerDay >= index + 1) {
+                  {dailySchedules.map((schedule, index) => {
+                    if (schedule.timeOfDay === medTime) {
                       return (
                         <li
-                          key={`${medTime}${schedule.id}`}
+                          key={`${medTime}${schedule.id}${index}`}
                           className="flex items-center justify-between mb-2">
                           <HoverClickPopover
                             trigger={<span>{schedule.name}</span>}
@@ -209,11 +224,20 @@ export function MedicationSchedule({
                               </div>
                             }></HoverClickPopover>
                           {selectedDateObj.valueOf() <=
-                            currentDateObj.valueOf() && (
-                            <MedStatusDot
-                              medicationId={schedule.medicationId}
-                            />
-                          )}
+                            currentDateObj.valueOf() &&
+                            differenceInDays < 7 && (
+                              <MedStatusDot
+                                medicationId={schedule.medicationId}
+                                isClicked={dotStatusStates[index]}
+                                onClick={() =>
+                                  handleClick(
+                                    schedule.medicationId,
+                                    index,
+                                    schedule.scheduleId
+                                  )
+                                }
+                              />
+                            )}
                         </li>
                       );
                     }

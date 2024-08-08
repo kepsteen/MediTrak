@@ -95,7 +95,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
     setIsLoading(true);
     setProgress(0);
     try {
-      if (Number(timesPerDay) !== 0) {
+      if (+timesPerDay > 0) {
         const daysAdded: string[] = [];
         for (let i = 0; i < checkedState.length; i++) {
           if (checkedState[i]) daysAdded.push(days[i].label);
@@ -142,14 +142,14 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
   }
   return (
     <>
-      <section className="container pt-4">
-        <Card className={`relative pt-4 ${isLoading && 'hidden'}`}>
-          <CardHeader className="text-2xl text-redblack">
-            <CardTitle>{medication.name}</CardTitle>
-            <CardDescription>{`Add ${medication.name} to your schedule`}</CardDescription>
+      <div className="max-w-[600px] max-h-[520px] mx-auto">
+        <Card className="relative w-full h-full pt-4 mt-4">
+          <CardHeader className={`text-2xl ${isLoading && 'hidden'}`}>
+            <CardTitle className="text-center">{medication.name}</CardTitle>
+            <CardDescription className="text-center">{`Add ${medication.name} to your schedule`}</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form action="" onSubmit={(e) => handleSubmit(e)}>
+          <CardContent className="relative">
+            <form onSubmit={(e) => handleSubmit(e)} className="">
               <ul>
                 {days.map((day, index) => (
                   <li key={day.id} className="flex items-center gap-2 mb-3">
@@ -160,14 +160,14 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
                     />
                     <label
                       htmlFor={day.id}
-                      className="text-lg font-medium leading-none text-redblack peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       {day.label}
                     </label>
                   </li>
                 ))}
               </ul>
               <div className="flex flex-col gap-4 pt-4">
-                <label htmlFor="doses" className="text-lg text-redblack">
+                <label htmlFor="doses" className="text-lg">
                   How many doses do you take per day?
                 </label>
                 <Select
@@ -188,21 +188,29 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
               <Button
                 type="submit"
                 size="md"
-                className="w-full col-span-2 mt-4">
+                className="w-full col-span-2 mt-4 bg-darkred">
                 Submit
               </Button>
             </form>
+            {isLoading && (
+              <div className="absolute inset-0 bg-white rounded-md ">
+                <div className="flex flex-col justify-center h-full gap-4 mx-10">
+                  <p className="text-2xl text-center text-redblack">{`Adding ${medication.name} to your schedule.`}</p>
+                  <Progress value={progress} />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
-        {isLoading && (
-          <div className="absolute top-[180px] left-[40px] right-[40px] bottom-[50%] bg-white rounded-md ">
-            <div className="flex flex-col justify-center h-full gap-4 mx-10">
-              <p className="text-2xl text-center text-redblack">{`Adding ${medication.name} to your schedule.`}</p>
-              <Progress value={progress} />
-            </div>
+      </div>
+      {/* {isLoading && (
+        <div className="absolute top-[180px] left-[40px] right-[40px] bottom-[50%] bg-white rounded-md ">
+          <div className="flex flex-col justify-center h-full gap-4 mx-10">
+            <p className="text-2xl text-center text-redblack">{`Adding ${medication.name} to your schedule.`}</p>
+            <Progress value={progress} />
           </div>
-        )}
-      </section>
+        </div>
+      )} */}
     </>
   );
 }
