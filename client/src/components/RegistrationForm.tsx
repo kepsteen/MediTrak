@@ -111,7 +111,6 @@ export function RegistrationForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('clicked');
     try {
       const newUser = { ...values };
       const response = await fetch('/api/sign-up', {

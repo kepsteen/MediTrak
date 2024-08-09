@@ -110,7 +110,7 @@ export function MedicationList({ medications, error }: Props) {
                 open={openStates[index]}
                 onOpenChange={() => toggleCard(index)}>
                 <Card>
-                  <CardHeader className="hover:bg-gray-200">
+                  <CardHeader className="hover:bg-greypink">
                     <CollapsibleTrigger>
                       <CardTitle className="flex items-center text-redblack">
                         <MedicationIcon type={medication.form} />

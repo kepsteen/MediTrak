@@ -50,6 +50,7 @@ export default {
         green: '#1A6B13',
         orange: '#fa9016',
         black: '#0f0004',
+        greypink: '#ede5e5',
       },
       fontFamily: {
         inter: ['Inter', 'serif'],

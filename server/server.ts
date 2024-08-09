@@ -57,8 +57,12 @@ type Log = {
 type User = {
   id: number;
   username: string;
+  password: string;
   hashedPassword: string;
   role: string;
+  dob: string;
+  notificationsEnabled: boolean;
+  phoneNumber: string;
 };
 
 type Auth = {
@@ -111,6 +115,21 @@ function validateSchedule(reqBody: unknown): void {
   if (!form) throw new ClientError(400, 'Valid form required');
 }
 
+function validateUser(reqBody: unknown): void {
+  const { username, password, role, dob, phoneNumber, notificationsEnabled } =
+    reqBody as User;
+  if (!username) {
+    throw new ClientError(400, 'username is required');
+  }
+  if (!password) throw new ClientError(400, 'Password is required');
+  if (!role) throw new ClientError(400, 'Role is required');
+  if (!dob) throw new ClientError(400, 'Date of Birth is required');
+  if (phoneNumber === undefined)
+    throw new ClientError(400, 'Phone number is required');
+  if (notificationsEnabled === undefined || notificationsEnabled === null)
+    throw new ClientError(400, 'NotificationsEnabled required');
+}
+
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -134,13 +153,9 @@ app.use(express.json());
 
 app.post('/api/sign-up', async (req, res, next) => {
   try {
-    const { username, password, role } = req.body;
-    if (!username || !password || !role) {
-      throw new ClientError(
-        400,
-        'username, password and role are required fields'
-      );
-    }
+    const { username, password, dob, role, phoneNumber, notificationsEnabled } =
+      req.body;
+    validateUser(req.body);
     const checkUsernameSql = `
       select *
         from "users"
@@ -152,11 +167,18 @@ app.post('/api/sign-up', async (req, res, next) => {
     }
     const hashedPassword = await argon2.hash(password);
     const sql = `
-      insert into "users" ("username", "hashedPassword", "role")
-        values ($1, $2, $3)
+      insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+        values ($1, $2, $3, $4, $5, $6)
         returning "id", "username", "createdAt";
     `;
-    const result = await db.query<User>(sql, [username, hashedPassword, role]);
+    const result = await db.query<User>(sql, [
+      username,
+      hashedPassword,
+      role,
+      dob,
+      phoneNumber,
+      notificationsEnabled,
+    ]);
     const [user] = result.rows;
     res.status(201).json(user);
   } catch (err) {
