@@ -1,3 +1,4 @@
+import { AddCaregiverForm } from '@/components/AddCaregiverForm';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -112,7 +121,7 @@ export function Profile() {
                             variant="ghost"
                             size="icon"
                             className="rounded-full">
-                            <div className="p-1 rounded-full bg-green">
+                            <div className="p-1 rounded-full bg-emerald-600">
                               <PlusIcon className="w-4 h-4 text-white transition-all hover:w-5 hover:h-5" />
                             </div>
                             <span className="sr-only">Accept</span>
@@ -121,7 +130,7 @@ export function Profile() {
                             variant="ghost"
                             size="icon"
                             className="rounded-full">
-                            <div className="p-1 bg-red-500 rounded-full">
+                            <div className="p-1 rounded-full bg-ruby">
                               <XIcon className="w-4 h-4 text-white transition-all hover:w-5 hover:h-5" />
                             </div>
                             <span className="sr-only">Decline</span>
@@ -135,7 +144,21 @@ export function Profile() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-center">
-                  <Button variant="secondary">Add caregiver</Button>
+                  <Dialog>
+                    <DialogTrigger>
+                      <Button variant="secondary">Add caregiver</Button>
+                    </DialogTrigger>
+                    <DialogContent className="rounded-md w-[80%] max-w-[550px]">
+                      <DialogHeader>
+                        <DialogTitle>
+                          Enter the username of the Caregiver you want to add.
+                        </DialogTitle>
+                        <DialogDescription>
+                          <AddCaregiverForm />
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 </CardFooter>
               </Card>
             </TabsContent>

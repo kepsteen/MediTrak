@@ -20,7 +20,7 @@ CREATE TABLE "medicationSchedules" (
 );
 
 CREATE TABLE "users" (
-  "id" SERIAL PRIMARY KEY,
+  "userId" SERIAL PRIMARY KEY,
   "username" text UNIQUE,
   "hashedPassword" text,
   "role" text,
@@ -30,8 +30,27 @@ CREATE TABLE "users" (
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
+CREATE TABLE "caregiverAccess" (
+  "accessId" SERIAL PRIMARY KEY,
+  "userId" integer,
+  "connectedUserId" integer,
+  "grantedAt" timestamptz NOT NULL DEFAULT (now()),
+  "active" boolean
+);
+
+CREATE TABLE "accessRequests" (
+  "requestId" SERIAL PRIMARY KEY,
+  "requestedId" integer,
+  "requesterId" integer,
+  "requesterUsername" text,
+  "requesterFullName" text,
+  "active" boolean,
+  "requestedAt" timestamptz NOT NULL DEFAULT (now()),
+  "updatedAt" timestamptz NOT NULL DEFAULT (now())
+);
+
 CREATE TABLE "medications" (
-  "id" SERIAL PRIMARY KEY,
+  "medicationId" SERIAL PRIMARY KEY,
   "rxcui" integer,
   "name" text,
   "dosage" text,
@@ -43,14 +62,6 @@ CREATE TABLE "medications" (
   "scheduled" boolean,
   "userId" integer,
   "createdAt" timestamptz NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "caregiverAccess" (
-  "id" SERIAL PRIMARY KEY,
-  "patientId" integer,
-  "caregiverId" integer,
-  "grantedAt" timestamptz NOT NULL DEFAULT (now()),
-  "active" boolean
 );
 
 CREATE TABLE "medicationLogs" (
@@ -67,25 +78,28 @@ CREATE TABLE "rxNormConcepts" (
   "name" text
 );
 
-
-
 COMMENT ON COLUMN "medications"."notes" IS 'Any notes about the med';
 
-ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("id");
+ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("medicationId");
 
-ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
+ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
-ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
+ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
-ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("patientId") REFERENCES "users" ("id");
+ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
-ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("caregiverId") REFERENCES "users" ("id");
+ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("connectedUserId") REFERENCES "users" ("userId");
 
-ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("id");
+ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("medicationId");
 
-ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("userId") REFERENCES "users" ("id");
+ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
 ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("scheduleId") REFERENCES "medicationSchedules" ("scheduleId");
+
+ALTER TABLE "accessRequests" ADD FOREIGN KEY ("requesterId") REFERENCES "users" ("userId");
+
+ALTER TABLE "accessRequests" ADD FOREIGN KEY ("requestedId") REFERENCES "users" ("userId");
+
 
 -- Add trigger function to update the updatedAt column
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -105,5 +119,11 @@ EXECUTE FUNCTION update_updated_at_column();
 -- Create a new trigger for medicationSchedules table
 CREATE TRIGGER update_medicationSchedules_updated_at
 BEFORE UPDATE ON "medicationSchedules"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Create a new trigger for accessRequests table
+CREATE TRIGGER update_medicationSchedules_updated_at
+BEFORE UPDATE ON "accessRequests"
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();

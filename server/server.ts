@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 
 type Medication = {
-  id: number;
+  medicationId: number;
   name: string;
   dosage: string;
   form: string;
@@ -55,7 +55,7 @@ type Log = {
 };
 
 type User = {
-  id: number;
+  userId: number;
   username: string;
   password: string;
   hashedPassword: string;
@@ -68,6 +68,17 @@ type User = {
 type Auth = {
   username: string;
   password: string;
+};
+
+type Requests = {
+  requestId: number;
+  requestedId: number;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  active: string;
+  requestedAt: string;
+  updatedAt: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -204,7 +215,7 @@ app.post('/api/sign-in', async (req, res, next) => {
       throw new ClientError(401, 'Invalid Password');
     }
     const payload = {
-      userId: user.id,
+      userId: user.userId,
       username: user.username,
     };
     const token = jwt.sign(payload, hashKey);
@@ -392,7 +403,7 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
     const sql = `
       update "medications"
         set "scheduled" = $1
-        where "id" = $2
+        where "medicationId" = $2
         returning *;
     `;
     const result = await db.query(sql, [scheduled, id]);
@@ -406,22 +417,22 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
 });
 
 app.put(
-  '/api/medications/:medicationId/inventory',
+  '/api/medications/:id/inventory',
   authMiddleware,
   async (req, res, next) => {
     try {
-      const { medicationId } = req.params;
+      const { id } = req.params;
       const { operation } = req.body;
-      if (!Number.isInteger(+medicationId))
+      if (!Number.isInteger(+id))
         throw new ClientError(400, 'Valid medicationId (integer) required');
       if (operation !== 'decrement' && operation !== 'increment') {
         throw new ClientError(400, 'Valid operation required');
       }
       const sql = `
       select * from "medications"
-        where "id" = $1;
+        where "medicationId" = $1;
     `;
-      const result = await db.query<Medication>(sql, [medicationId]);
+      const result = await db.query<Medication>(sql, [id]);
       const [medication] = result.rows;
 
       if (!medication) throw new ClientError(404, 'no medication found');
@@ -438,14 +449,17 @@ app.put(
           remaining: medication.remaining + 1,
         };
       }
-      const { remaining, id } = medicationToUpdate;
+      const { remaining, medicationId } = medicationToUpdate;
       const sql2 = `
       update "medications"
         set "remaining" = $1
-        where "id" = $2
+        where "medicationId" = $2
         returning *;
     `;
-      const result2 = await db.query<Medication>(sql2, [remaining, id]);
+      const result2 = await db.query<Medication>(sql2, [
+        remaining,
+        medicationId,
+      ]);
       const [updatedMedication] = result2.rows;
       if (!updatedMedication) throw new ClientError(404, 'No medication found');
       res.status(200).json(updatedMedication);
@@ -487,6 +501,19 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+// app.get('/api/connections/requests', authMiddleware, async (req, res, next) => {
+//   try {
+//     const sql = `
+//       select *
+//         from "accessRequests"
+//         where "requestedId" = $1;
+//     `;
+//     const result = await db.query<
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);
