@@ -132,8 +132,6 @@ export function RegistrationForm() {
     } catch (error) {
       setError(String(error));
     }
-
-    console.log('values', values);
   }
 
   return (

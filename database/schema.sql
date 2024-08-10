@@ -31,13 +31,6 @@ CREATE TABLE "users" (
   "createdAt" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "caregiverAccess" (
-  "accessId" SERIAL PRIMARY KEY,
-  "userId" integer,
-  "connectedUserId" integer,
-  "grantedAt" timestamptz NOT NULL DEFAULT (now()),
-  "active" boolean
-);
 
 CREATE TABLE "accessRequests" (
   "requestId" SERIAL PRIMARY KEY,
@@ -45,7 +38,7 @@ CREATE TABLE "accessRequests" (
   "requesterId" integer,
   "requesterUsername" text,
   "requesterFullName" text,
-  "active" boolean,
+  "status" text,
   "requestedAt" timestamptz NOT NULL DEFAULT (now()),
   "updatedAt" timestamptz NOT NULL DEFAULT (now())
 );
@@ -86,10 +79,6 @@ ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("medicationId") REFERENCES "m
 ALTER TABLE "medicationSchedules" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
 
 ALTER TABLE "medications" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
-
-ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("userId") REFERENCES "users" ("userId");
-
-ALTER TABLE "caregiverAccess" ADD FOREIGN KEY ("connectedUserId") REFERENCES "users" ("userId");
 
 ALTER TABLE "medicationLogs" ADD FOREIGN KEY ("medicationId") REFERENCES "medications" ("medicationId");
 

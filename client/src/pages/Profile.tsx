@@ -11,8 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useUser } from '@/components/useUser';
 
 export function Profile() {
+  const { user } = useUser();
   return (
     <>
       <section className="container flex flex-col pt-[100px] items-center gap-8 px-4 py-12 mx-auto md:px-6">
@@ -21,7 +23,9 @@ export function Profile() {
             <TabsList>
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="health">Health</TabsTrigger>
-              <TabsTrigger value="connections">Caregivers</TabsTrigger>
+              <TabsTrigger value="connections">
+                {user?.role === 'Patient' ? 'Caregivers' : 'Patients'}
+              </TabsTrigger>
             </TabsList>
           </div>
           <div className="flex justify-center">

@@ -47,7 +47,20 @@ export type Requests = {
   requesterId: number;
   requesterUsername: string;
   requesterFullName: string;
-  active: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
+};
+
+export type ConnectedUsers = {
+  requestId: number;
+  requestedId: number;
+  requestedUsername: string;
+  requestedFullName: string;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
   requestedAt: string;
   updatedAt: string;
 };

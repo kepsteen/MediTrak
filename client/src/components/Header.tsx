@@ -1,6 +1,6 @@
 import { LogIn, LogOut, Pill, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useUser } from './useUser';
 
@@ -8,6 +8,7 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const { user, handleSignOut } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,7 +71,7 @@ export function Header() {
             {user && (
               <li className="w-full">
                 <Link to="/profile" onClick={handleClick} className="nav-link">
-                  Profile <UserRound size={32} />
+                  {user.username} <UserRound size={32} />
                 </Link>
               </li>
             )}
@@ -84,6 +85,7 @@ export function Header() {
                   onClick={() => {
                     handleClick();
                     handleSignOut();
+                    navigate('/');
                   }}
                   className="nav-link">
                   Sign out <LogOut size={32} />

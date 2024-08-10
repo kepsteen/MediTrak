@@ -12,12 +12,21 @@ insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBi
 insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
   values ('patient2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Two', '03/15/1997', '9499222057', true);
 
-insert into "caregiverAccess" ("userId", "connectedUserId", "active")
-values  (1, 2, true),
-        (2, 1, true);
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver Two', '03/15/1997', '9499222057', true);
 
-insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "active")
-  values (2, 3, 'patient2', 'Patient Two', true);
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient3', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Three', '03/15/1997', '9499222057', true);
+
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver3', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver Three', '03/15/1997', '9499222057', true);
+
+insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "status")
+values  (2, 1, 'patient1', 'Patient One', 'Pending'),
+        (3, 4, 'caregiver2', 'Caregiver Two', 'Pending'),
+        (6, 5, 'patient3', 'Patient Three', 'Accepted'),
+        (1, 6, 'caregiver3', 'Caregiver Three', 'Pending');
+
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
 VALUES (1, 'Tylenol', '500 mg', 'Capsule', 'For headaches', 'Dr. Smith', 30, 30, true, 1);

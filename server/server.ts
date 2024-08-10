@@ -78,16 +78,22 @@ type Requests = {
   requesterId: number;
   requesterUsername: string;
   requesterFullName: string;
-  active: string;
+  status: string;
   requestedAt: string;
   updatedAt: string;
 };
 
-type CaregiverAccess = {
-  userId: number;
-  connectedUserId: number;
-  grantedAt: string;
-  active: string;
+type ConnectedUsers = {
+  requestId: number;
+  requestedId: number;
+  requestedUsername: string;
+  requestedFullName: string;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -514,16 +520,27 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
 });
 
 app.get('/api/requests', authMiddleware, async (req, res, next) => {
-  console.log('hit endpoint');
   try {
     const sql = `
-      select *
-        from "accessRequests"
-        where "requestedId" = $1;
+      select
+        "ar"."requestId",
+        "ar"."requesterId",
+        "ar"."requestedId",
+        "ar"."requesterUsername",
+        "ar"."requesterFullName",
+        "ar"."status",
+        "u"."username" AS "requestedUsername",
+        "u"."fullName" AS "requestedFullName"
+      from
+        "accessRequests" "ar"
+      inner join
+        "users" "u" ON "ar"."requestedId" = "u"."userId"
+      where
+        "ar"."requesterId" = $1 OR "u"."userId" = $1;
     `;
-    const result = await db.query<Requests>(sql, [req.user?.userId]);
-    const requests = result.rows;
-    res.json(requests);
+    const result = await db.query<ConnectedUsers>(sql, [req.user?.userId]);
+    const requestUsers = result.rows;
+    res.json(requestUsers);
   } catch (err) {
     next(err);
   }
@@ -542,7 +559,7 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
     if (!requestedUser)
       throw new ClientError(404, `User ${username} not found.`);
     const requestSql = `
-      insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "active")
+      insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "status")
         values ($1, $2, $3, $4, $5)
         returning *;
     `;
@@ -551,7 +568,7 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
       req.user?.userId,
       req.user?.username,
       req.user?.fullName,
-      true,
+      'Pending',
     ]);
     const [request] = resultRequest.rows;
     res.status(201).json(request);
@@ -561,40 +578,58 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
 });
 
 app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
+  // Todo: Update this endpoint to remover caregiver access and to update the status of the request to Accepted or delete the request
   try {
     const { requesterId, isAccepted } = req.body;
     if (!requesterId) throw new ClientError(400, 'requesterId is required');
     if (!Number.isInteger(+requesterId))
       throw new ClientError(400, 'Valid requesterId (integer) is required');
-    const deleteRequestSql = `
+    const sql = `
+      update "accessRequests"
+        set "status" = 'Accepted'
+        where "requesterId" = $1 and "requestedId" = $2
+        returning *;
+    `;
+    const result = await db.query<Requests>(sql, [
+      requesterId,
+      req.user?.userId,
+    ]);
+    const [request] = result.rows;
+    if (!request) throw new ClientError(404, 'Connection Request Not found');
+
+    if (!isAccepted) {
+      const deleteRequestSql = `
       delete from "accessRequests"
         where "requesterId" = $1 and "requestedId" = $2
         returning *;
     `;
-    const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
-      requesterId,
-      req.user?.userId,
-    ]);
-    const [accessRequest] = resultDeleteRequest.rows;
-    if (!accessRequest) throw new ClientError(404, 'Request not found');
-    if (!isAccepted) return;
-    const sql = `
-      insert into "caregiverAccess" ("userId", "connectedUserId", "active")
-        values ($1, $2, $3)
-        returning *;
-    `;
-    const result = await db.query<CaregiverAccess>(sql, [
-      req.user?.userId,
-      requesterId,
-      true,
-    ]);
-    const [access] = result.rows;
-    if (!access) throw new ClientError(404, 'Caregiver Access not found');
-    res.status(200).json(access);
+      const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
+        requesterId,
+        req.user?.userId,
+      ]);
+      const [accessRequest] = resultDeleteRequest.rows;
+      if (!accessRequest) throw new ClientError(404, 'Request not found');
+    }
+
+    res.status(200).json(request);
   } catch (err) {
     next(err);
   }
 });
+
+// app.get('/api/caregiverAccess', authMiddleware, async (req, res, next) => {
+//   try {
+//     const sql = `
+//       select * from "caregiverAccess"
+//         where "userId" = $1;
+//     `;
+//     const result = await db.query<CaregiverAccess>(sql, [req.user?.userId]);
+//     const caregiverAccess = result.rows;
+//     res.json(caregiverAccess);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
