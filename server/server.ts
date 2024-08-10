@@ -5,6 +5,7 @@ import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
+import { request } from 'http';
 
 type Medication = {
   medicationId: number;
@@ -59,6 +60,7 @@ type User = {
   username: string;
   password: string;
   hashedPassword: string;
+  fullName: string;
   role: string;
   dob: string;
   notificationsEnabled: boolean;
@@ -79,6 +81,13 @@ type Requests = {
   active: string;
   requestedAt: string;
   updatedAt: string;
+};
+
+type CaregiverAccess = {
+  userId: number;
+  connectedUserId: number;
+  grantedAt: string;
+  active: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -217,6 +226,8 @@ app.post('/api/sign-in', async (req, res, next) => {
     const payload = {
       userId: user.userId,
       username: user.username,
+      fullName: user.fullName,
+      role: user.role,
     };
     const token = jwt.sign(payload, hashKey);
     res.status(200).json({
@@ -502,18 +513,89 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
   }
 });
 
-// app.get('/api/connections/requests', authMiddleware, async (req, res, next) => {
-//   try {
-//     const sql = `
-//       select *
-//         from "accessRequests"
-//         where "requestedId" = $1;
-//     `;
-//     const result = await db.query<
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+app.get('/api/requests', authMiddleware, async (req, res, next) => {
+  console.log('hit endpoint');
+  try {
+    const sql = `
+      select *
+        from "accessRequests"
+        where "requestedId" = $1;
+    `;
+    const result = await db.query<Requests>(sql, [req.user?.userId]);
+    const requests = result.rows;
+    res.json(requests);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const sql = `
+      select "userId"
+        from "users"
+        where "username" = $1;
+    `;
+    const result = await db.query<User>(sql, [username]);
+    const [requestedUser] = result.rows;
+    if (!requestedUser)
+      throw new ClientError(404, `User ${username} not found.`);
+    const requestSql = `
+      insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "active")
+        values ($1, $2, $3, $4, $5)
+        returning *;
+    `;
+    const resultRequest = await db.query<Requests>(requestSql, [
+      requestedUser.userId,
+      req.user?.userId,
+      req.user?.username,
+      req.user?.fullName,
+      true,
+    ]);
+    const [request] = resultRequest.rows;
+    res.status(201).json(request);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
+  try {
+    const { requesterId, isAccepted } = req.body;
+    if (!requesterId) throw new ClientError(400, 'requesterId is required');
+    if (!Number.isInteger(+requesterId))
+      throw new ClientError(400, 'Valid requesterId (integer) is required');
+    const deleteRequestSql = `
+      delete from "accessRequests"
+        where "requesterId" = $1 and "requestedId" = $2
+        returning *;
+    `;
+    const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
+      requesterId,
+      req.user?.userId,
+    ]);
+    const [accessRequest] = resultDeleteRequest.rows;
+    if (!accessRequest) throw new ClientError(404, 'Request not found');
+    if (!isAccepted) return;
+    const sql = `
+      insert into "caregiverAccess" ("userId", "connectedUserId", "active")
+        values ($1, $2, $3)
+        returning *;
+    `;
+    const result = await db.query<CaregiverAccess>(sql, [
+      req.user?.userId,
+      requesterId,
+      true,
+    ]);
+    const [access] = result.rows;
+    if (!access) throw new ClientError(404, 'Caregiver Access not found');
+    res.status(200).json(access);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);

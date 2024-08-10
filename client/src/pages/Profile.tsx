@@ -1,27 +1,16 @@
-import { AddCaregiverForm } from '@/components/AddCaregiverForm';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CaregiverAccessList } from '@/components/CaregiverAccessList';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusIcon, XIcon } from 'lucide-react';
 
 export function Profile() {
   return (
@@ -98,69 +87,7 @@ export function Profile() {
               </Card>
             </TabsContent>
             <TabsContent value="connections">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Caregivers</CardTitle>
-                  <CardDescription>Manage your caregivers.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="flex items-start gap-4 p-2 -mx-2 transition-all rounded-md hover:bg-greypink hover:text-accent-foreground">
-                    <div className="pt-2">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src="/placeholder-user.jpg" />
-                        <AvatarFallback>CR</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="space-y-1 ">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium leading-none">
-                          Caregiver Request 1
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full">
-                            <div className="p-1 rounded-full bg-emerald-600">
-                              <PlusIcon className="w-4 h-4 text-white transition-all hover:w-5 hover:h-5" />
-                            </div>
-                            <span className="sr-only">Accept</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="rounded-full">
-                            <div className="p-1 rounded-full bg-ruby">
-                              <XIcon className="w-4 h-4 text-white transition-all hover:w-5 hover:h-5" />
-                            </div>
-                            <span className="sr-only">Decline</span>
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        caregiver1@example.com
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                  <Dialog>
-                    <DialogTrigger>
-                      <Button variant="secondary">Add caregiver</Button>
-                    </DialogTrigger>
-                    <DialogContent className="rounded-md w-[80%] max-w-[550px]">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Enter the username of the Caregiver you want to add.
-                        </DialogTitle>
-                        <DialogDescription>
-                          <AddCaregiverForm />
-                        </DialogDescription>
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
-                </CardFooter>
-              </Card>
+              <CaregiverAccessList />
             </TabsContent>
           </div>
         </Tabs>

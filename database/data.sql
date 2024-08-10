@@ -3,14 +3,14 @@
 
 -- EXAMPLE:
 
-insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-  values ('patient', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', '03/15/1997', '9499222057', true);
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient One', '03/15/1997', '9499222057', true);
 
-insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-  values ('caregiver', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', '03/15/1997', '9499222057', true);
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver One', '03/15/1997', '9499222057', true);
 
-insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-  values ('patient2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', '03/15/1997', '9499222057', true);
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Two', '03/15/1997', '9499222057', true);
 
 insert into "caregiverAccess" ("userId", "connectedUserId", "active")
 values  (1, 2, true),

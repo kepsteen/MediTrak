@@ -33,3 +33,21 @@ export type Log = {
   taken: boolean;
   updatedAt: string;
 };
+
+export type CaregiverAccess = {
+  userId: number;
+  connectedUserId: number;
+  grantedAt: string;
+  active: string;
+};
+
+export type Requests = {
+  requestId: number;
+  requestedId: number;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  active: string;
+  requestedAt: string;
+  updatedAt: string;
+};

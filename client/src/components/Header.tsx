@@ -76,7 +76,7 @@ export function Header() {
             )}
             <li className="w-full">
               {!user ? (
-                <Link to="/sign-up" onClick={handleClick} className="nav-link">
+                <Link to="/sign-in" onClick={handleClick} className="nav-link">
                   Register / Sign in <LogIn size={32} />
                 </Link>
               ) : (

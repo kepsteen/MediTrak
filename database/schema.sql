@@ -23,6 +23,7 @@ CREATE TABLE "users" (
   "userId" SERIAL PRIMARY KEY,
   "username" text UNIQUE,
   "hashedPassword" text,
+  "fullName" text,
   "role" text,
   "dateOfBirth" text,
   "phoneNumber" text,

@@ -7,6 +7,9 @@ declare global {
       /** `User` object populated by `authMiddleware`. */
       user?: {
         userId: number;
+        username: string;
+        fullName: string;
+        role: string;
       };
     }
   }
