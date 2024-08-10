@@ -1,11 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,6 +7,7 @@ import {
 } from '@/components/ui/collapsible';
 import {
   BoxSelect,
+  CircleAlert,
   Droplet,
   HandCoins,
   Pill,
@@ -114,14 +109,20 @@ export function MedicationList({ medications, error }: Props) {
                     <CollapsibleTrigger>
                       <CardTitle className="flex items-center text-redblack">
                         <MedicationIcon type={medication.form} />
-                        {medication.name}
+                        <div className="flex justify-between w-full">
+                          <span>{medication.name}</span>
+                          {medication.remaining < 10 &&
+                            medication.remaining !== null && (
+                              <CircleAlert className="text-ruby" />
+                            )}
+                        </div>
                       </CardTitle>
                     </CollapsibleTrigger>
-                    <CardDescription>
+                    {/* <CardDescription>
                       {medication.remaining < 10 &&
                         medication.remaining !== null &&
                         `Warning: ${medication.remaining} doses left`}
-                    </CardDescription>
+                    </CardDescription> */}
                   </CardHeader>
                   <CollapsibleContent className="collapsible-content">
                     <CardContent>
