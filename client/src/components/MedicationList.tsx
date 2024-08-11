@@ -22,7 +22,6 @@ import { Medication } from '../../data';
 
 type Props = {
   medications: Medication[];
-  error: unknown;
 };
 
 export const MedicationIcon = ({ type }) => {
@@ -45,7 +44,7 @@ export const MedicationIcon = ({ type }) => {
   }
 };
 
-export function MedicationList({ medications, error }: Props) {
+export function MedicationList({ medications }: Props) {
   const [openStates, setOpenStates] = useState<boolean[]>(
     new Array(medications.length).fill(false)
   );
@@ -64,14 +63,6 @@ export function MedicationList({ medications, error }: Props) {
     setOpenStates(new Array(medications.length).fill(!isAllExpanded));
   }
 
-  if (error) {
-    return (
-      <div>
-        Error Loading Medications:{' '}
-        {error instanceof Error ? error.message : 'Unknown Error'}
-      </div>
-    );
-  }
   return (
     <>
       <section className="container pb-[40px] ">

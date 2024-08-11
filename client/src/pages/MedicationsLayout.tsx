@@ -93,6 +93,15 @@ export function MedicationsLayout() {
       setError(error);
     }
   }
+
+  if (error) {
+    return (
+      <>
+        <p>{`Error : ${error}`}</p>
+      </>
+    );
+  }
+
   return (
     <>
       {user && (
@@ -128,12 +137,11 @@ export function MedicationsLayout() {
             )}
           </div>
           <TabsContent value="list">
-            <MedicationList medications={medications} error={error} />
+            <MedicationList medications={medications} />
           </TabsContent>
           <TabsContent value="schedule">
             <MedicationScheduleLayout
               medications={medications}
-              error={error}
               updateMedication={updateMedication}
             />
           </TabsContent>

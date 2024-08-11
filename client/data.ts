@@ -64,3 +64,5 @@ export type ConnectedUsers = {
   requestedAt: string;
   updatedAt: string;
 };
+
+export type ScheduleLog = Schedule & Log;

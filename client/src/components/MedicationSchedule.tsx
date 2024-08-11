@@ -79,33 +79,24 @@ type ScheduleLog = Schedule & Log;
 
 const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
-export function MedicationSchedule() {
-  const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
-  const [fetchError, setFetchError] = useState<unknown>();
-  const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
+type Props = {
+  dailySchedules: ScheduleLog[];
+  selectedDateObj: Date;
+  setSelectedDateObj: (value: Date) => void;
+};
+
+export function MedicationSchedule({
+  dailySchedules,
+  selectedDateObj,
+  setSelectedDateObj,
+}: Props) {
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
   const [error, setError] = useState<unknown>();
   const token = readToken();
+
   useEffect(() => {
-    const fetchSchedules = async (day: number) => {
-      try {
-        const response = await fetch(`/api/schedule/${days[day]}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const schedules = (await response.json()) as ScheduleLog[];
-        setDailySchedules(schedules);
-        setDotStatusStates(schedules.map((item) => item.taken));
-      } catch (error) {
-        setFetchError(error);
-      }
-    };
-    setSelectedDateObj(selectedDateObj);
-    fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj, token]);
+    setDotStatusStates(dailySchedules.map((item) => item.taken));
+  }, [dailySchedules]);
 
   const selectedDateString = `${days[selectedDateObj.getDay()]} ${
     months[selectedDateObj.getMonth()]
@@ -168,10 +159,9 @@ export function MedicationSchedule() {
     }
   }
 
-  if (fetchError || error) {
+  if (error) {
     return (
       <>
-        <p>{`fetchError : ${fetchError}`}</p>
         <p>{`Error : ${error}`}</p>
       </>
     );

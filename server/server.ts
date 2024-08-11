@@ -312,6 +312,7 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
       name,
       dosage,
       form,
+      currentDay,
     } = req.body;
 
     const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
@@ -364,7 +365,19 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
       RETURNING *;
     `;
     const logResult = await db.query(logSql, logValues.flat());
-    res.status(201).json(scheduleResult.rows);
+    const joinSql = `
+      SELECT *
+      FROM "medicationSchedules" AS "ms"
+      JOIN "medicationLogs" AS "ml" USING ("scheduleId")
+      WHERE "ms"."userId" = $1 AND "ms"."dayOfWeek" = $2 AND "ms"."medicationId" = $3;
+    `;
+    const joinResult = await db.query(joinSql, [
+      userId,
+      currentDay,
+      medicationId,
+    ]);
+    console.log('joinResultRows', joinResult.rows);
+    res.status(201).json(joinResult.rows);
   } catch (err) {
     next(err);
   }

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from './ui/checkbox';
 import React, { useEffect, useState } from 'react';
-import { Medication } from 'data';
+import { Medication, ScheduleLog } from 'data';
 import { Progress } from '@/components/ui/progress';
 import { readToken } from '@/lib/data';
 import { useUser } from './useUser';
@@ -54,9 +54,18 @@ const days = [
 type Props = {
   medication: Medication;
   onScheduleComplete: (medication: Medication) => void;
+  currentDay: string;
+  dailySchedules: ScheduleLog[];
+  setDailySchedules: (value: ScheduleLog[]) => void;
 };
 
-export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
+export function AddScheduleForm({
+  medication,
+  onScheduleComplete,
+  currentDay,
+  dailySchedules,
+  setDailySchedules,
+}: Props) {
   const [checkedState, setCheckedState] = useState<boolean[]>(
     new Array(days.length).fill(false)
   );
@@ -108,6 +117,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
           name: medication.name,
           dosage: medication.dosage,
           form: medication.form,
+          currentDay,
         };
 
         const response = await fetch('/api/schedule', {
@@ -120,6 +130,10 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
         });
         if (!response.ok)
           throw new Error(`Response status: ${response.status}`);
+        const newSchedules = (await response.json()) as ScheduleLog[];
+        setTimeout(() => {
+          setDailySchedules(dailySchedules.concat(newSchedules));
+        }, 4000);
       }
     } catch (error) {
       setError(error);
