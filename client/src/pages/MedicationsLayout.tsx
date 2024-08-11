@@ -50,7 +50,6 @@ export function MedicationsLayout() {
       navigate('/sign-in');
     }
     const fetchMedications = async (patientId: string) => {
-      console.log(`fetching meds for ${patientId}`);
       if (user) {
         try {
           const response = await fetch(`/api/medications/${patientId}`, {
@@ -137,7 +136,10 @@ export function MedicationsLayout() {
             )}
           </div>
           <TabsContent value="list">
-            <MedicationList medications={medications} />
+            <MedicationList
+              medications={medications}
+              selectedPatientId={parseInt(selectedPatientId)}
+            />
           </TabsContent>
           <TabsContent value="schedule">
             <MedicationScheduleLayout

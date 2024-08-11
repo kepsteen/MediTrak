@@ -19,7 +19,10 @@ export default function App() {
             <Route path="/sign-up" element={<AuthPage mode="sign-up" />} />
             <Route path="/sign-in" element={<AuthPage mode="sign-in" />} />
             <Route path="medications" element={<MedicationsLayout />} />
-            <Route path="medications/add" element={<AddMedications />} />
+            <Route
+              path="medications/add/:patientId"
+              element={<AddMedications />}
+            />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>

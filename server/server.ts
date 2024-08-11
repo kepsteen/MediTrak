@@ -376,7 +376,6 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
       currentDay,
       medicationId,
     ]);
-    console.log('joinResultRows', joinResult.rows);
     res.status(201).json(joinResult.rows);
   } catch (err) {
     next(err);

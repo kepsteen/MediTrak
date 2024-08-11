@@ -22,6 +22,7 @@ import { Medication } from '../../data';
 
 type Props = {
   medications: Medication[];
+  selectedPatientId: number;
 };
 
 export const MedicationIcon = ({ type }) => {
@@ -44,12 +45,11 @@ export const MedicationIcon = ({ type }) => {
   }
 };
 
-export function MedicationList({ medications }: Props) {
+export function MedicationList({ medications, selectedPatientId }: Props) {
   const [openStates, setOpenStates] = useState<boolean[]>(
     new Array(medications.length).fill(false)
   );
   const [isAllExpanded, setIsAllExpanded] = useState(false);
-
   function toggleCard(index: number) {
     setOpenStates((prevStates) => {
       const newStates = [...prevStates];
@@ -70,15 +70,17 @@ export function MedicationList({ medications }: Props) {
           className={`flex flex-wrap gap-2 items-center justify-center ${
             medications.length !== 0 && 'min-[400px]:justify-between'
           }`}>
-          <Link to="/medications/add">
-            <Button size="md" className="bg-darkred">
-              Add New Medication
-              <span className="flex items-start ml-2">
-                <Pill size={24} />
-                <Plus size={18} />
-              </span>
-            </Button>
-          </Link>
+          {!isNaN(selectedPatientId) && (
+            <Link to={`/medications/add/${selectedPatientId}`}>
+              <Button size="md" className="bg-darkred">
+                Add New Medication
+                <span className="flex items-start ml-2">
+                  <Pill size={24} />
+                  <Plus size={18} />
+                </span>
+              </Button>
+            </Link>
+          )}
           {medications.length !== 0 && (
             <Button
               size="md"
