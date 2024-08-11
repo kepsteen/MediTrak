@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-// import { useUser } from './useUser';
 import { readToken } from '@/lib/data';
 import { useState } from 'react';
 import { ConnectedUsers } from 'data';
@@ -45,7 +44,6 @@ type Props = {
 };
 
 export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
-  // const { user } = useUser();
   const token = readToken();
   const [error, setError] = useState<unknown | string>();
   const form = useForm<z.infer<typeof FormSchema>>({

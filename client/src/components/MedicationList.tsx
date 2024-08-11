@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Medication } from '../../data';
 import { useUser } from './useUser';
+import { DownloadButton } from './DownloadButton';
 
 type Props = {
   medications: Medication[];
@@ -84,15 +85,18 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
               </Button>
             </Link>
           )}
-          {medications.length !== 0 && (
-            <Button
-              size="md"
-              variant="outline"
-              className="w-[6rem] my-2"
-              onClick={toggleAll}>
-              {isAllExpanded ? 'Close All' : 'Expand All'}
-            </Button>
-          )}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <DownloadButton medications={medications} />
+            {medications.length !== 0 && (
+              <Button
+                size="md"
+                variant="outline"
+                className="w-[6rem] my-2"
+                onClick={toggleAll}>
+                {isAllExpanded ? 'Close All' : 'Expand All'}
+              </Button>
+            )}
+          </div>
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (
