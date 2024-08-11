@@ -5,7 +5,7 @@ import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
-import { request } from 'http';
+import twilio from 'twilio';
 
 type Medication = {
   medicationId: number;
@@ -96,6 +96,16 @@ type ConnectedUsers = {
   updatedAt: string;
 };
 
+type MedicationUser = {
+  medicationName: string;
+  dosage: string;
+  form: string;
+  prescriber: string;
+  remaining: number;
+  phoneNumber: string;
+  notificationsEnabled: boolean;
+};
+
 function validateMedication(reqBody: unknown): void {
   const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
     reqBody as Medication;
@@ -154,6 +164,21 @@ function validateUser(reqBody: unknown): void {
     throw new ClientError(400, 'Phone number is required');
   if (notificationsEnabled === undefined || notificationsEnabled === null)
     throw new ClientError(400, 'NotificationsEnabled required');
+}
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = twilio(accountSid, authToken);
+
+async function createMessage(
+  msgBody: string,
+  phoneNumber: string
+): Promise<void> {
+  const message = await client.messages.create({
+    body: msgBody,
+    from: '+18559702293',
+    to: `+1${phoneNumber}`,
+  });
 }
 
 const db = new pg.Pool({
@@ -499,6 +524,32 @@ app.put(
       ]);
       const [updatedMedication] = result2.rows;
       if (!updatedMedication) throw new ClientError(404, 'No medication found');
+
+      if (remaining < 1 && operation === 'decrement') {
+        const sqlMedicationUser = `
+          select  "m"."name" as "medicationName",
+                  "m"."dosage",
+                  "m"."form",
+                  "m"."prescriber",
+                  "m"."remaining",
+                  "u"."phoneNumber",
+                  "u"."notificationsEnabled"
+            from "medications" AS "m"
+            inner join "users" AS "u" on "m"."userId" = "u"."userId"
+            where "m"."medicationId" = $1;
+        `;
+        const result = await db.query<MedicationUser>(sqlMedicationUser, [
+          updatedMedication.medicationId,
+        ]);
+        const [medicationUser] = result.rows;
+        if (medicationUser.notificationsEnabled) {
+          const prescriber = medicationUser.prescriber
+            ? `${medicationUser.prescriber}'s office`
+            : "your doctor's office";
+          const msg = `Please call ${prescriber} to refill ${medicationUser.medicationName} ${medicationUser.dosage} ${medicationUser.form}.`;
+          createMessage(msg, medicationUser.phoneNumber);
+        }
+      }
       res.status(200).json(updatedMedication);
     } catch (err) {
       next(err);
