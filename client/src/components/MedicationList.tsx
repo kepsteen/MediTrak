@@ -19,6 +19,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Medication } from '../../data';
+import { useUser } from './useUser';
 
 type Props = {
   medications: Medication[];
@@ -46,6 +47,7 @@ export const MedicationIcon = ({ type }) => {
 };
 
 export function MedicationList({ medications, selectedPatientId }: Props) {
+  const { user } = useUser();
   const [openStates, setOpenStates] = useState<boolean[]>(
     new Array(medications.length).fill(false)
   );
@@ -57,6 +59,7 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
       return newStates;
     });
   }
+  if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   function toggleAll() {
     setIsAllExpanded(!isAllExpanded);

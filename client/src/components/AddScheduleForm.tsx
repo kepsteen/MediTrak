@@ -57,6 +57,7 @@ type Props = {
   currentDay: string;
   dailySchedules: ScheduleLog[];
   setDailySchedules: (value: ScheduleLog[]) => void;
+  selectedPatientId: number;
 };
 
 export function AddScheduleForm({
@@ -65,6 +66,7 @@ export function AddScheduleForm({
   currentDay,
   dailySchedules,
   setDailySchedules,
+  selectedPatientId,
 }: Props) {
   const [checkedState, setCheckedState] = useState<boolean[]>(
     new Array(days.length).fill(false)
@@ -75,6 +77,8 @@ export function AddScheduleForm({
   const [progress, setProgress] = useState(0);
   const token = readToken();
   const { user } = useUser();
+
+  if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -113,7 +117,7 @@ export function AddScheduleForm({
           medicationId: medication.medicationId,
           timesPerDay: parseInt(timesPerDay),
           daysOfWeek: daysAdded,
-          userId: user?.userId,
+          userId: selectedPatientId,
           name: medication.name,
           dosage: medication.dosage,
           form: medication.form,

@@ -3,6 +3,7 @@ import { Medication, ScheduleLog } from '../../data';
 import { useEffect, useState } from 'react';
 import { MedicationSchedule } from './MedicationSchedule';
 import { readToken } from '@/lib/data';
+import { useUser } from './useUser';
 
 const days = [
   'Sunday',
@@ -17,26 +18,34 @@ const days = [
 type Props = {
   medications: Medication[];
   updateMedication: (medication: Medication) => void;
+  selectedPatientId: number;
 };
 
 export function MedicationScheduleLayout({
   medications,
   updateMedication,
+  selectedPatientId,
 }: Props) {
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
   const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
   const [error, setError] = useState<unknown>();
+  const { user } = useUser();
   const token = readToken();
+
+  if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   useEffect(() => {
     const fetchSchedules = async (day: number) => {
       try {
-        const response = await fetch(`/api/schedule/${days[day]}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `/api/schedule/${days[day]}/${selectedPatientId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         if (!response.ok)
           throw new Error(`Response status: ${response.status}`);
         const schedules = (await response.json()) as ScheduleLog[];
@@ -47,7 +56,7 @@ export function MedicationScheduleLayout({
     };
     setSelectedDateObj(selectedDateObj);
     fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj, token]);
+  }, [selectedDateObj, token, selectedPatientId]);
 
   useEffect(() => {
     setUnscheduledMeds(
@@ -79,6 +88,7 @@ export function MedicationScheduleLayout({
           currentDay={days[selectedDateObj.getDay()]}
           dailySchedules={dailySchedules}
           setDailySchedules={setDailySchedules}
+          selectedPatientId={selectedPatientId}
         />
       )}
       <MedicationSchedule

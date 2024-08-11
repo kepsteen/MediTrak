@@ -145,6 +145,7 @@ export function MedicationsLayout() {
             <MedicationScheduleLayout
               medications={medications}
               updateMedication={updateMedication}
+              selectedPatientId={parseInt(selectedPatientId)}
             />
           </TabsContent>
         </Tabs>

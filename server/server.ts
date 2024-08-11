@@ -382,48 +382,53 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.get('/api/schedule/:day', authMiddleware, async (req, res, next) => {
-  try {
-    const { day } = req.params;
-    const sql = `
+app.get(
+  '/api/schedule/:day/:patientId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { day, patientId } = req.params;
+      const sql = `
       select *
         from "medicationSchedules" as "ms"
         join "medicationLogs" as "ml" using ("scheduleId")
         where "ms"."userId" = $1 AND "dayOfWeek" = $2;
     `;
-    const result = await db.query<ScheduleOutput>(sql, [req.user?.userId, day]);
-    const schedules = result.rows;
-    if (schedules.length > 0) {
-      for (const schedule of schedules) {
-        const updatedAt = new Date(schedule.updatedAt);
-        const currentDate = new Date();
-        const differenceInDays: number =
-          (currentDate.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-        if (differenceInDays > 7) {
-          const sql = `
+      const result = await db.query<ScheduleOutput>(sql, [patientId, day]);
+      const schedules = result.rows;
+      if (schedules.length > 0) {
+        for (const schedule of schedules) {
+          const updatedAt = new Date(schedule.updatedAt);
+          const currentDate = new Date();
+          const differenceInDays: number =
+            (currentDate.getTime() - updatedAt.getTime()) /
+            (1000 * 60 * 60 * 24);
+          if (differenceInDays > 7) {
+            const sql = `
             update "medicationLogs"
               set "taken" = false
               where "scheduleId = $1
               returning *;
           `;
-          const result = await db.query<Log>(sql, [schedule.scheduleId]);
-          const sql2 = `
+            const result = await db.query<Log>(sql, [schedule.scheduleId]);
+            const sql2 = `
             update "medicationSchedules"
               set "updatedAt" = NOW()
               where "scheduleId" = $1
               returning *;
           `;
-          const result2 = await db.query<ScheduleOutput>(sql2, [
-            schedule.scheduleId,
-          ]);
+            const result2 = await db.query<ScheduleOutput>(sql2, [
+              schedule.scheduleId,
+            ]);
+          }
         }
       }
+      res.json(schedules);
+    } catch (err) {
+      next(err);
     }
-    res.json(schedules);
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 app.put('/api/medications', authMiddleware, async (req, res, next) => {
   try {
