@@ -79,8 +79,8 @@ type Props = {
 
 export function MedInfoDocument({ medications }: Props) {
   const sortedMeds = medications.sort((a, b) => {
-    const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-    const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    const nameA = a.name.toUpperCase();
+    const nameB = b.name.toUpperCase();
     if (nameA < nameB) {
       return -1;
     }
