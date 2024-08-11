@@ -5,9 +5,10 @@ import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
+import { request } from 'http';
 
 type Medication = {
-  id: number;
+  medicationId: number;
   name: string;
   dosage: string;
   form: string;
@@ -55,15 +56,44 @@ type Log = {
 };
 
 type User = {
-  id: number;
+  userId: number;
   username: string;
+  password: string;
   hashedPassword: string;
+  fullName: string;
   role: string;
+  dob: string;
+  notificationsEnabled: boolean;
+  phoneNumber: string;
 };
 
 type Auth = {
   username: string;
   password: string;
+};
+
+type Requests = {
+  requestId: number;
+  requestedId: number;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
+};
+
+type ConnectedUsers = {
+  requestId: number;
+  requestedId: number;
+  requestedUsername: string;
+  requestedFullName: string;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
 };
 
 function validateMedication(reqBody: unknown): void {
@@ -91,7 +121,7 @@ function validateMedication(reqBody: unknown): void {
 function validateSchedule(reqBody: unknown): void {
   const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
     reqBody as ScheduleInput;
-  if (!Number.isInteger(medicationId)) {
+  if (!Number.isInteger(+medicationId)) {
     throw new ClientError(400, 'Valid medicationId (integer) is required');
   }
   if (!Number.isInteger(+timesPerDay)) {
@@ -109,6 +139,21 @@ function validateSchedule(reqBody: unknown): void {
   if (!name) throw new ClientError(400, 'Valid name required');
   if (!dosage) throw new ClientError(400, 'Valid dosage required');
   if (!form) throw new ClientError(400, 'Valid form required');
+}
+
+function validateUser(reqBody: unknown): void {
+  const { username, password, role, dob, phoneNumber, notificationsEnabled } =
+    reqBody as User;
+  if (!username) {
+    throw new ClientError(400, 'username is required');
+  }
+  if (!password) throw new ClientError(400, 'Password is required');
+  if (!role) throw new ClientError(400, 'Role is required');
+  if (!dob) throw new ClientError(400, 'Date of Birth is required');
+  if (phoneNumber === undefined)
+    throw new ClientError(400, 'Phone number is required');
+  if (notificationsEnabled === undefined || notificationsEnabled === null)
+    throw new ClientError(400, 'NotificationsEnabled required');
 }
 
 const db = new pg.Pool({
@@ -134,13 +179,9 @@ app.use(express.json());
 
 app.post('/api/sign-up', async (req, res, next) => {
   try {
-    const { username, password, role } = req.body;
-    if (!username || !password || !role) {
-      throw new ClientError(
-        400,
-        'username, password and role are required fields'
-      );
-    }
+    const { username, password, dob, role, phoneNumber, notificationsEnabled } =
+      req.body;
+    validateUser(req.body);
     const checkUsernameSql = `
       select *
         from "users"
@@ -152,11 +193,18 @@ app.post('/api/sign-up', async (req, res, next) => {
     }
     const hashedPassword = await argon2.hash(password);
     const sql = `
-      insert into "users" ("username", "hashedPassword", "role")
-        values ($1, $2, $3)
+      insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+        values ($1, $2, $3, $4, $5, $6)
         returning "id", "username", "createdAt";
     `;
-    const result = await db.query<User>(sql, [username, hashedPassword, role]);
+    const result = await db.query<User>(sql, [
+      username,
+      hashedPassword,
+      role,
+      dob,
+      phoneNumber,
+      notificationsEnabled,
+    ]);
     const [user] = result.rows;
     res.status(201).json(user);
   } catch (err) {
@@ -182,8 +230,10 @@ app.post('/api/sign-in', async (req, res, next) => {
       throw new ClientError(401, 'Invalid Password');
     }
     const payload = {
-      userId: user.id,
+      userId: user.userId,
       username: user.username,
+      fullName: user.fullName,
+      role: user.role,
     };
     const token = jwt.sign(payload, hashKey);
     res.status(200).json({
@@ -262,6 +312,7 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
       name,
       dosage,
       form,
+      currentDay,
     } = req.body;
 
     const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
@@ -294,7 +345,10 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
         .join(', ')}
       RETURNING *;
     `;
-    const scheduleResult = await db.query(scheduleSql, scheduleValues.flat());
+    const scheduleResult = await db.query<ScheduleOutput>(
+      scheduleSql,
+      scheduleValues.flat()
+    );
     for (const schedule of scheduleResult.rows) {
       logValues.push([medicationId, userId, schedule.scheduleId, false]);
     }
@@ -311,69 +365,85 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
       RETURNING *;
     `;
     const logResult = await db.query(logSql, logValues.flat());
-    res.status(201).json(scheduleResult.rows);
+    const joinSql = `
+      SELECT *
+      FROM "medicationSchedules" AS "ms"
+      JOIN "medicationLogs" AS "ml" USING ("scheduleId")
+      WHERE "ms"."userId" = $1 AND "ms"."dayOfWeek" = $2 AND "ms"."medicationId" = $3;
+    `;
+    const joinResult = await db.query(joinSql, [
+      userId,
+      currentDay,
+      medicationId,
+    ]);
+    res.status(201).json(joinResult.rows);
   } catch (err) {
     next(err);
   }
 });
 
-app.get('/api/schedule/:day', authMiddleware, async (req, res, next) => {
-  try {
-    const { day } = req.params;
-    const sql = `
+app.get(
+  '/api/schedule/:day/:patientId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { day, patientId } = req.params;
+      const sql = `
       select *
         from "medicationSchedules" as "ms"
         join "medicationLogs" as "ml" using ("scheduleId")
         where "ms"."userId" = $1 AND "dayOfWeek" = $2;
     `;
-    const result = await db.query<ScheduleOutput>(sql, [req.user?.userId, day]);
-    const schedules = result.rows;
-    if (schedules.length > 0) {
-      for (const schedule of schedules) {
-        const updatedAt = new Date(schedule.updatedAt);
-        const currentDate = new Date();
-        const differenceInDays: number =
-          (currentDate.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-        if (differenceInDays > 7) {
-          const sql = `
+      const result = await db.query<ScheduleOutput>(sql, [patientId, day]);
+      const schedules = result.rows;
+      if (schedules.length > 0) {
+        for (const schedule of schedules) {
+          const updatedAt = new Date(schedule.updatedAt);
+          const currentDate = new Date();
+          const differenceInDays: number =
+            (currentDate.getTime() - updatedAt.getTime()) /
+            (1000 * 60 * 60 * 24);
+          if (differenceInDays > 7) {
+            const sql = `
             update "medicationLogs"
               set "taken" = false
               where "scheduleId = $1
               returning *;
           `;
-          const result = await db.query<Log>(sql, [schedule.scheduleId]);
-          const sql2 = `
+            const result = await db.query<Log>(sql, [schedule.scheduleId]);
+            const sql2 = `
             update "medicationSchedules"
               set "updatedAt" = NOW()
               where "scheduleId" = $1
               returning *;
           `;
-          const result2 = await db.query<ScheduleOutput>(sql2, [
-            schedule.scheduleId,
-          ]);
+            const result2 = await db.query<ScheduleOutput>(sql2, [
+              schedule.scheduleId,
+            ]);
+          }
         }
       }
+      res.json(schedules);
+    } catch (err) {
+      next(err);
     }
-    res.json(schedules);
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 app.put('/api/medications', authMiddleware, async (req, res, next) => {
   try {
-    const { scheduled, id } = req.body;
+    const { scheduled, medicationId } = req.body;
     if (scheduled === undefined) {
       throw new ClientError(400, 'scheduled property required');
     }
-    if (!id) throw new ClientError(400, 'medicationId required');
+    if (!medicationId) throw new ClientError(400, 'medicationId required');
     const sql = `
       update "medications"
         set "scheduled" = $1
-        where "id" = $2
+        where "medicationId" = $2
         returning *;
     `;
-    const result = await db.query(sql, [scheduled, id]);
+    const result = await db.query(sql, [scheduled, medicationId]);
     const [medication] = result.rows;
     if (!medication)
       throw new ClientError(404, `failed to update scheduled status`);
@@ -384,22 +454,22 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
 });
 
 app.put(
-  '/api/medications/:medicationId/inventory',
+  '/api/medications/:id/inventory',
   authMiddleware,
   async (req, res, next) => {
     try {
-      const { medicationId } = req.params;
+      const { id } = req.params;
       const { operation } = req.body;
-      if (!Number.isInteger(+medicationId))
+      if (!Number.isInteger(+id))
         throw new ClientError(400, 'Valid medicationId (integer) required');
       if (operation !== 'decrement' && operation !== 'increment') {
         throw new ClientError(400, 'Valid operation required');
       }
       const sql = `
       select * from "medications"
-        where "id" = $1;
+        where "medicationId" = $1;
     `;
-      const result = await db.query<Medication>(sql, [medicationId]);
+      const result = await db.query<Medication>(sql, [id]);
       const [medication] = result.rows;
 
       if (!medication) throw new ClientError(404, 'no medication found');
@@ -416,14 +486,17 @@ app.put(
           remaining: medication.remaining + 1,
         };
       }
-      const { remaining, id } = medicationToUpdate;
+      const { remaining, medicationId } = medicationToUpdate;
       const sql2 = `
       update "medications"
         set "remaining" = $1
-        where "id" = $2
+        where "medicationId" = $2
         returning *;
     `;
-      const result2 = await db.query<Medication>(sql2, [remaining, id]);
+      const result2 = await db.query<Medication>(sql2, [
+        remaining,
+        medicationId,
+      ]);
       const [updatedMedication] = result2.rows;
       if (!updatedMedication) throw new ClientError(404, 'No medication found');
       res.status(200).json(updatedMedication);
@@ -432,11 +505,6 @@ app.put(
     }
   }
 );
-/*
- * Handles paths that aren't handled by any other route handler.
- * It responds with `index.html` to support page refreshes with React Router.
- * This must be the _last_ route, just before errorMiddleware.
- */
 
 app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
   try {
@@ -465,6 +533,124 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+app.get('/api/requests', authMiddleware, async (req, res, next) => {
+  try {
+    const sql = `
+      select
+        "ar"."requestId",
+        "ar"."requesterId",
+        "ar"."requestedId",
+        "ar"."requesterUsername",
+        "ar"."requesterFullName",
+        "ar"."status",
+        "u"."username" AS "requestedUsername",
+        "u"."fullName" AS "requestedFullName"
+      from
+        "accessRequests" "ar"
+      inner join
+        "users" "u" ON "ar"."requestedId" = "u"."userId"
+      where
+        "ar"."requesterId" = $1 OR "u"."userId" = $1;
+    `;
+    const result = await db.query<ConnectedUsers>(sql, [req.user?.userId]);
+    const requestUsers = result.rows;
+    res.json(requestUsers);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const sql = `
+      select "userId"
+        from "users"
+        where "username" = $1;
+    `;
+    const result = await db.query<User>(sql, [username]);
+    const [requestedUser] = result.rows;
+    if (!requestedUser)
+      throw new ClientError(404, `User ${username} not found.`);
+    const requestSql = `
+      insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "status")
+        values ($1, $2, $3, $4, $5)
+        returning *;
+    `;
+    const resultRequest = await db.query<Requests>(requestSql, [
+      requestedUser.userId,
+      req.user?.userId,
+      req.user?.username,
+      req.user?.fullName,
+      'Pending',
+    ]);
+    const [request] = resultRequest.rows;
+    res.status(201).json(request);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
+  // Todo: Update this endpoint to remover caregiver access and to update the status of the request to Accepted or delete the request
+  try {
+    const { requesterId, isAccepted } = req.body;
+    if (!requesterId) throw new ClientError(400, 'requesterId is required');
+    if (!Number.isInteger(+requesterId))
+      throw new ClientError(400, 'Valid requesterId (integer) is required');
+    const sql = `
+      update "accessRequests"
+        set "status" = 'Accepted'
+        where "requesterId" = $1 and "requestedId" = $2
+        returning *;
+    `;
+    const result = await db.query<Requests>(sql, [
+      requesterId,
+      req.user?.userId,
+    ]);
+    const [request] = result.rows;
+    if (!request) throw new ClientError(404, 'Connection Request Not found');
+
+    if (!isAccepted) {
+      const deleteRequestSql = `
+      delete from "accessRequests"
+        where "requesterId" = $1 and "requestedId" = $2
+        returning *;
+    `;
+      const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
+        requesterId,
+        req.user?.userId,
+      ]);
+      const [accessRequest] = resultDeleteRequest.rows;
+      if (!accessRequest) throw new ClientError(404, 'Request not found');
+    }
+
+    res.status(200).json(request);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// app.get('/api/caregiverAccess', authMiddleware, async (req, res, next) => {
+//   try {
+//     const sql = `
+//       select * from "caregiverAccess"
+//         where "userId" = $1;
+//     `;
+//     const result = await db.query<CaregiverAccess>(sql, [req.user?.userId]);
+//     const caregiverAccess = result.rows;
+//     res.json(caregiverAccess);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+/*
+ * Handles paths that aren't handled by any other route handler.
+ * It responds with `index.html` to support page refreshes with React Router.
+ * This must be the _last_ route, just before errorMiddleware.
+ */
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);

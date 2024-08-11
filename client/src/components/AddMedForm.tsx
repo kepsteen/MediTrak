@@ -22,7 +22,6 @@ import {
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
-import { useUser } from './useUser';
 import { readToken } from '@/lib/data';
 
 const formSchema = z
@@ -60,7 +59,11 @@ const formSchema = z
     }
   );
 
-export function AddMedForm() {
+type Props = {
+  patientId: number;
+};
+
+export function AddMedForm({ patientId }: Props) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,12 +77,11 @@ export function AddMedForm() {
     },
   });
   const { toast } = useToast();
-  const { user } = useUser();
   const navigate = useNavigate();
   const token = readToken();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const newMedication = { ...values, scheduled: false, userId: user?.userId };
+    const newMedication = { ...values, scheduled: false, userId: patientId };
     for (const key in newMedication) {
       if (newMedication[key] === '') newMedication[key] = null;
     }

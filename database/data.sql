@@ -3,17 +3,36 @@
 
 -- EXAMPLE:
 
-insert into "users" ("username", "hashedPassword", "role")
-  values ('cody', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient');
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient One', '03/15/1997', '9499222057', true);
 
-insert into "users" ("username", "hashedPassword", "role")
-  values ('cody2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient');
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver One', '03/15/1997', '9499222057', true);
+
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Two', '03/15/1997', '9499222057', true);
+
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver Two', '03/15/1997', '9499222057', true);
+
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('patient3', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Three', '03/15/1997', '9499222057', true);
+
+insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+  values ('caregiver3', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver Three', '03/15/1997', '9499222057', true);
+
+insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "status")
+values  (2, 1, 'patient1', 'Patient One', 'Pending'),
+        (3, 4, 'caregiver2', 'Caregiver Two', 'Pending'),
+        (6, 5, 'patient3', 'Patient Three', 'Accepted'),
+        (1, 6, 'caregiver3', 'Caregiver Three', 'Pending');
+
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
-VALUES (1, 'Tylenol', '500 mg', 'Capsule', 'For headaches', 'Dr. Smith', 30, 30, true, 1);
+VALUES (1, 'Tylenol', '500 mg', 'Capsule', 'For headaches', 'Dr. Smith', 30, 30, false, 1);
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
-VALUES (1, 'Amoxicillin', '250 mg', 'Tablet', 'For bacterial infections', 'Dr. Johnson', 20, 20, true, 1);
+VALUES (1, 'Amoxicillin', '250 mg', 'Tablet', 'For bacterial infections', 'Dr. Johnson', 20, 20, false, 3);
 
 INSERT INTO "medications" ("rxcui", "name", "dosage", "form", "notes", "prescriber", "amount", "remaining", "scheduled", "userId")
 VALUES (1, 'Lisinopril', '10 mg', 'Tablet', 'For high blood pressure', 'Dr. Williams', 90, 90, true, 1);

@@ -2,26 +2,57 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicationList } from '../components/MedicationList';
 import { MedicationScheduleLayout } from '../components/MedicationScheduleLayout';
 import { useEffect, useState } from 'react';
-import { Medication } from '../../data';
+import { ConnectedUsers, Medication } from '../../data';
 import { useUser } from '@/components/useUser';
 import { readToken } from '@/lib/data';
 import { useNavigate } from 'react-router';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function MedicationsLayout() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [error, setError] = useState<unknown>();
+  const [connectedUsers, setConnectedUsers] = useState<ConnectedUsers[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const { user } = useUser();
   const token = readToken();
   const navigate = useNavigate();
 
   useEffect(() => {
+    async function fetchConnectedUsers() {
+      try {
+        const response = await fetch('/api/requests', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok)
+          throw new Error(`Response status: ${response.status}`);
+        const requestsResult = (await response.json()) as ConnectedUsers[];
+        setConnectedUsers(
+          requestsResult.filter((request) => request.status === 'Accepted')
+        );
+      } catch (error) {
+        setError(error);
+      }
+    }
+    fetchConnectedUsers();
+  }, [token]);
+
+  useEffect(() => {
     if (!user) {
       navigate('/sign-in');
     }
-    const fetchMedications = async () => {
+    const fetchMedications = async (patientId: string) => {
       if (user) {
         try {
-          const response = await fetch(`/api/medications/${user.userId}`, {
+          const response = await fetch(`/api/medications/${patientId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!response.ok)
@@ -33,8 +64,10 @@ export function MedicationsLayout() {
         }
       }
     };
-    fetchMedications();
-  }, [user, token, navigate]);
+    if (selectedPatientId) fetchMedications(selectedPatientId);
+    if (!selectedPatientId && user?.role === 'Patient')
+      fetchMedications(String(user?.userId));
+  }, [user, token, navigate, selectedPatientId]);
 
   async function updateMedication(updatedMedication: Medication) {
     try {
@@ -50,31 +83,69 @@ export function MedicationsLayout() {
         throw new Error(`Response2 status: ${response2.status}`);
       setMedications((prevMeds) =>
         prevMeds.map((med) =>
-          med.id === updatedMedication.id ? updatedMedication : med
+          med.medicationId === updatedMedication.medicationId
+            ? updatedMedication
+            : med
         )
       );
     } catch (error) {
       setError(error);
     }
   }
+
+  if (error) {
+    return (
+      <>
+        <p>{`Error : ${error}`}</p>
+      </>
+    );
+  }
+
   return (
     <>
       {user && (
         <Tabs defaultValue="list" className="container pt-[110px]">
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center gap-2">
             <TabsList>
               <TabsTrigger value="list">List</TabsTrigger>
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
             </TabsList>
+            {user?.role === 'Caregiver' && connectedUsers.length > 0 && (
+              <Select
+                value={selectedPatientId}
+                onValueChange={setSelectedPatientId}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select a patient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {connectedUsers.map((connectedUser, index) => (
+                    <SelectItem
+                      key={`${connectedUser.requestId}${index}`}
+                      value={String(
+                        connectedUser.requestedId === user?.userId
+                          ? connectedUser.requesterId
+                          : connectedUser.requestedId
+                      )}>
+                      {connectedUser.requestedId === user?.userId
+                        ? connectedUser.requesterFullName
+                        : connectedUser.requestedFullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <TabsContent value="list">
-            <MedicationList medications={medications} error={error} />
+            <MedicationList
+              medications={medications}
+              selectedPatientId={parseInt(selectedPatientId)}
+            />
           </TabsContent>
           <TabsContent value="schedule">
             <MedicationScheduleLayout
               medications={medications}
-              error={error}
               updateMedication={updateMedication}
+              selectedPatientId={parseInt(selectedPatientId)}
             />
           </TabsContent>
         </Tabs>

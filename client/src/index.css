@@ -50,4 +50,8 @@
   .collapsible-content[data-state='closed'] {
     @apply animate-slide-up;
   }
+
+  .nav-link {
+    @apply flex ml-auto justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby;
+  }
 }

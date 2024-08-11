@@ -1,11 +1,5 @@
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,6 +7,7 @@ import {
 } from '@/components/ui/collapsible';
 import {
   BoxSelect,
+  CircleAlert,
   Droplet,
   HandCoins,
   Pill,
@@ -24,10 +19,11 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Medication } from '../../data';
+import { useUser } from './useUser';
 
 type Props = {
   medications: Medication[];
-  error: unknown;
+  selectedPatientId: number;
 };
 
 export const MedicationIcon = ({ type }) => {
@@ -50,12 +46,12 @@ export const MedicationIcon = ({ type }) => {
   }
 };
 
-export function MedicationList({ medications, error }: Props) {
+export function MedicationList({ medications, selectedPatientId }: Props) {
+  const { user } = useUser();
   const [openStates, setOpenStates] = useState<boolean[]>(
     new Array(medications.length).fill(false)
   );
   const [isAllExpanded, setIsAllExpanded] = useState(false);
-
   function toggleCard(index: number) {
     setOpenStates((prevStates) => {
       const newStates = [...prevStates];
@@ -63,20 +59,13 @@ export function MedicationList({ medications, error }: Props) {
       return newStates;
     });
   }
+  if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   function toggleAll() {
     setIsAllExpanded(!isAllExpanded);
     setOpenStates(new Array(medications.length).fill(!isAllExpanded));
   }
 
-  if (error) {
-    return (
-      <div>
-        Error Loading Medications:{' '}
-        {error instanceof Error ? error.message : 'Unknown Error'}
-      </div>
-    );
-  }
   return (
     <>
       <section className="container pb-[40px] ">
@@ -84,15 +73,17 @@ export function MedicationList({ medications, error }: Props) {
           className={`flex flex-wrap gap-2 items-center justify-center ${
             medications.length !== 0 && 'min-[400px]:justify-between'
           }`}>
-          <Link to="/medications/add">
-            <Button size="md" className="bg-darkred">
-              Add New Medication
-              <span className="flex items-start ml-2">
-                <Pill size={24} />
-                <Plus size={18} />
-              </span>
-            </Button>
-          </Link>
+          {!isNaN(selectedPatientId) && (
+            <Link to={`/medications/add/${selectedPatientId}`}>
+              <Button size="md" className="bg-darkred">
+                Add New Medication
+                <span className="flex items-start ml-2">
+                  <Pill size={24} />
+                  <Plus size={18} />
+                </span>
+              </Button>
+            </Link>
+          )}
           {medications.length !== 0 && (
             <Button
               size="md"
@@ -110,18 +101,19 @@ export function MedicationList({ medications, error }: Props) {
                 open={openStates[index]}
                 onOpenChange={() => toggleCard(index)}>
                 <Card>
-                  <CardHeader className="hover:bg-gray-200">
+                  <CardHeader className="hover:bg-greypink">
                     <CollapsibleTrigger>
                       <CardTitle className="flex items-center text-redblack">
                         <MedicationIcon type={medication.form} />
-                        {medication.name}
+                        <div className="flex justify-between w-full">
+                          <span>{medication.name}</span>
+                          {medication.remaining < 10 &&
+                            medication.remaining !== null && (
+                              <CircleAlert className="text-ruby" />
+                            )}
+                        </div>
                       </CardTitle>
                     </CollapsibleTrigger>
-                    <CardDescription>
-                      {medication.remaining < 10 &&
-                        medication.remaining !== null &&
-                        `Warning: ${medication.remaining} doses left`}
-                    </CardDescription>
                   </CardHeader>
                   <CollapsibleContent className="collapsible-content">
                     <CardContent>

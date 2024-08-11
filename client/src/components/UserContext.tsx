@@ -4,6 +4,8 @@ import { readToken, readUser, removeAuth, saveAuth } from '../lib/data';
 export type User = {
   userId: number;
   username: string;
+  fullName: string;
+  role: string;
 };
 
 export type UserContextValues = {

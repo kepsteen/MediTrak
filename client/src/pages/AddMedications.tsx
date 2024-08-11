@@ -9,12 +9,12 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useUser } from '@/components/useUser';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 export function AddMedications() {
   const { user } = useUser();
   const navigate = useNavigate();
-
+  const { patientId } = useParams();
   useEffect(() => {
     if (!user) {
       navigate('/sign-in');
@@ -35,7 +35,7 @@ export function AddMedications() {
               <Separator />
             </CardHeader>
             <CardContent>
-              <AddMedForm />
+              <AddMedForm patientId={Number(patientId)} />
             </CardContent>
           </Card>
         </section>

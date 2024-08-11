@@ -1,5 +1,5 @@
 export type Medication = {
-  id: number;
+  medicationId: number;
   name: string;
   dosage: string;
   form: string;
@@ -33,3 +33,36 @@ export type Log = {
   taken: boolean;
   updatedAt: string;
 };
+
+export type CaregiverAccess = {
+  userId: number;
+  connectedUserId: number;
+  grantedAt: string;
+  active: string;
+};
+
+export type Requests = {
+  requestId: number;
+  requestedId: number;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
+};
+
+export type ConnectedUsers = {
+  requestId: number;
+  requestedId: number;
+  requestedUsername: string;
+  requestedFullName: string;
+  requesterId: number;
+  requesterUsername: string;
+  requesterFullName: string;
+  status: string;
+  requestedAt: string;
+  updatedAt: string;
+};
+
+export type ScheduleLog = Schedule & Log;

@@ -1,6 +1,6 @@
-import { Pill, UserRound, X } from 'lucide-react';
+import { LogIn, LogOut, Pill, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useUser } from './useUser';
 
@@ -8,6 +8,7 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const { user, handleSignOut } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,31 +57,38 @@ export function Header() {
             <X size={48} className="ml-auto hover:text-ruby" />
           </button>
           <ul className="h2">
-            <li>
-              <Link
-                to="/medications"
-                className="flex justify-end items-center gap-2 mb-4 transition-ease text-[2rem] hover:text-ruby"
-                onClick={handleClick}>
-                Medications
-                <Pill size={32} />
-              </Link>
-            </li>
-            <li>
-              {!user ? (
+            {user && (
+              <li className="w-full">
                 <Link
-                  to="/sign-up"
-                  onClick={handleClick}
-                  className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
-                  Register / Sign in <UserRound size={32} />
+                  to="/medications"
+                  className="nav-link"
+                  onClick={handleClick}>
+                  Medications
+                  <Pill size={32} />
+                </Link>
+              </li>
+            )}
+            {user && (
+              <li className="w-full">
+                <Link to="/profile" onClick={handleClick} className="nav-link">
+                  {user.username} <UserRound size={32} />
+                </Link>
+              </li>
+            )}
+            <li className="w-full">
+              {!user ? (
+                <Link to="/sign-in" onClick={handleClick} className="nav-link">
+                  Register / Sign in <LogIn size={32} />
                 </Link>
               ) : (
                 <button
                   onClick={() => {
                     handleClick();
                     handleSignOut();
+                    navigate('/');
                   }}
-                  className="flex justify-end items-center gap-2 transition-ease text-[2rem] hover:text-ruby">
-                  Sign out <UserRound size={32} />
+                  className="nav-link">
+                  Sign out <LogOut size={32} />
                 </button>
               )}
             </li>
