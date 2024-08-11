@@ -37,15 +37,30 @@ export function Profile() {
                 <CardContent className="flex flex-col gap-4">
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="full-name">Full Name</Label>
-                    <Input type="text" id="full-name" value={user?.fullName} />
+                    <Input
+                      type="text"
+                      id="full-name"
+                      defaultValue={user?.fullName}
+                      readOnly
+                    />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="username">Username</Label>
-                    <Input type="text" id="username" value={user?.username} />
+                    <Input
+                      type="text"
+                      id="username"
+                      defaultValue={user?.username}
+                      readOnly
+                    />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="role">Role</Label>
-                    <Input type="text" id="role" value={user?.role} />
+                    <Input
+                      type="text"
+                      id="role"
+                      defaultValue={user?.role}
+                      readOnly
+                    />
                   </div>
                 </CardContent>
               </Card>

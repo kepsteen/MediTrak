@@ -12,6 +12,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -194,6 +195,7 @@ export function CaregiverAccessList() {
                     user?.role === 'Caregiver' ? 'patient' : 'caregiver'
                   } you want to add.`}
                 </DialogTitle>
+                <DialogDescription>Add a connected account.</DialogDescription>
                 <AddCaregiverForm
                   closeModal={closeModal}
                   setConnectedUsers={setConnectedUsers}
