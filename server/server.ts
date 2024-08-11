@@ -542,11 +542,13 @@ app.put(
           updatedMedication.medicationId,
         ]);
         const [medicationUser] = result.rows;
-        const prescriber = medicationUser.prescriber
-          ? `${medicationUser.prescriber}'s office`
-          : "your doctor's office";
-        const msg = `Please call ${prescriber} to refill ${medicationUser.medicationName} ${medicationUser.dosage} ${medicationUser.form}.`;
-        createMessage(msg, medicationUser.phoneNumber);
+        if (medicationUser.notificationsEnabled) {
+          const prescriber = medicationUser.prescriber
+            ? `${medicationUser.prescriber}'s office`
+            : "your doctor's office";
+          const msg = `Please call ${prescriber} to refill ${medicationUser.medicationName} ${medicationUser.dosage} ${medicationUser.form}.`;
+          createMessage(msg, medicationUser.phoneNumber);
+        }
       }
       res.status(200).json(updatedMedication);
     } catch (err) {
