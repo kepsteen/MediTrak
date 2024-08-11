@@ -593,7 +593,6 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
 });
 
 app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
-  // Todo: Update this endpoint to remover caregiver access and to update the status of the request to Accepted or delete the request
   try {
     const { requesterId, isAccepted } = req.body;
     if (!requesterId) throw new ClientError(400, 'requesterId is required');
@@ -631,20 +630,6 @@ app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
-
-// app.get('/api/caregiverAccess', authMiddleware, async (req, res, next) => {
-//   try {
-//     const sql = `
-//       select * from "caregiverAccess"
-//         where "userId" = $1;
-//     `;
-//     const result = await db.query<CaregiverAccess>(sql, [req.user?.userId]);
-//     const caregiverAccess = result.rows;
-//     res.json(caregiverAccess);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
 
 /*
  * Handles paths that aren't handled by any other route handler.
