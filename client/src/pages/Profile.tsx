@@ -1,5 +1,4 @@
 import { CaregiverAccessList } from '@/components/CaregiverAccessList';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -38,17 +37,16 @@ export function Profile() {
                 <CardContent className="flex flex-col gap-4">
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="full-name">Full Name</Label>
-                    <Input type="text" id="full-name" />
+                    <Input type="text" id="full-name" value={user?.fullName} />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="username">Username</Label>
-                    <Input type="text" id="username" disabled />
+                    <Input type="text" id="username" value={user?.username} />
                   </div>
                   <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label htmlFor="password">Password</Label>
-                    <Input type="password" id="password" />
+                    <Label htmlFor="role">Role</Label>
+                    <Input type="text" id="role" value={user?.role} />
                   </div>
-                  <Button variant="secondary">Save Changes</Button>
                 </CardContent>
               </Card>
             </TabsContent>
