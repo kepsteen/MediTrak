@@ -1,5 +1,5 @@
 export type Medication = {
-  id: number;
+  medicationId: number;
   name: string;
   dosage: string;
   form: string;

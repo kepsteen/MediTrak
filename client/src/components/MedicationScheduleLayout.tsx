@@ -26,7 +26,7 @@ export function MedicationScheduleLayout({
     const updatedMedication = { ...medication, scheduled: true };
     updateMedication(updatedMedication);
     setUnscheduledMeds((prevMeds) =>
-      prevMeds.filter((med) => med.id !== medication.id)
+      prevMeds.filter((med) => med.medicationId !== medication.medicationId)
     );
   }
 

@@ -86,7 +86,6 @@ export function MedicationSchedule() {
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
   const [error, setError] = useState<unknown>();
   const token = readToken();
-  // const differenceInDays =
   useEffect(() => {
     const fetchSchedules = async (day: number) => {
       try {
@@ -130,12 +129,12 @@ export function MedicationSchedule() {
 
   async function handleClick(
     medicationId: number,
-    index: number,
+    indexToUpdate: number,
     scheduleId: number
   ) {
     try {
       const body = {
-        operation: dotStatusStates[index] ? 'increment' : 'decrement',
+        operation: dotStatusStates[indexToUpdate] ? 'increment' : 'decrement',
       };
       const response = await fetch(
         `/api/medications/${medicationId}/inventory`,
@@ -162,7 +161,9 @@ export function MedicationSchedule() {
       setError(error);
     } finally {
       setDotStatusStates((prevStates) =>
-        prevStates.map((state, i) => (i === index ? !state : state))
+        prevStates.map((state, index) =>
+          index === indexToUpdate ? !state : state
+        )
       );
     }
   }

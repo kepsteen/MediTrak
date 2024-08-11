@@ -101,7 +101,7 @@ export function AddScheduleForm({ medication, onScheduleComplete }: Props) {
           if (checkedState[i]) daysAdded.push(days[i].label);
         }
         const newSchedule = {
-          medicationId: medication.id,
+          medicationId: medication.medicationId,
           timesPerDay: parseInt(timesPerDay),
           daysOfWeek: daysAdded,
           userId: user?.userId,

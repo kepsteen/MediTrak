@@ -121,7 +121,7 @@ function validateMedication(reqBody: unknown): void {
 function validateSchedule(reqBody: unknown): void {
   const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
     reqBody as ScheduleInput;
-  if (!Number.isInteger(medicationId)) {
+  if (!Number.isInteger(+medicationId)) {
     throw new ClientError(400, 'Valid medicationId (integer) is required');
   }
   if (!Number.isInteger(+timesPerDay)) {
@@ -344,7 +344,10 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
         .join(', ')}
       RETURNING *;
     `;
-    const scheduleResult = await db.query(scheduleSql, scheduleValues.flat());
+    const scheduleResult = await db.query<ScheduleOutput>(
+      scheduleSql,
+      scheduleValues.flat()
+    );
     for (const schedule of scheduleResult.rows) {
       logValues.push([medicationId, userId, schedule.scheduleId, false]);
     }
@@ -412,18 +415,18 @@ app.get('/api/schedule/:day', authMiddleware, async (req, res, next) => {
 
 app.put('/api/medications', authMiddleware, async (req, res, next) => {
   try {
-    const { scheduled, id } = req.body;
+    const { scheduled, medicationId } = req.body;
     if (scheduled === undefined) {
       throw new ClientError(400, 'scheduled property required');
     }
-    if (!id) throw new ClientError(400, 'medicationId required');
+    if (!medicationId) throw new ClientError(400, 'medicationId required');
     const sql = `
       update "medications"
         set "scheduled" = $1
         where "medicationId" = $2
         returning *;
     `;
-    const result = await db.query(sql, [scheduled, id]);
+    const result = await db.query(sql, [scheduled, medicationId]);
     const [medication] = result.rows;
     if (!medication)
       throw new ClientError(404, `failed to update scheduled status`);
@@ -485,11 +488,6 @@ app.put(
     }
   }
 );
-/*
- * Handles paths that aren't handled by any other route handler.
- * It responds with `index.html` to support page refreshes with React Router.
- * This must be the _last_ route, just before errorMiddleware.
- */
 
 app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
   try {
@@ -631,6 +629,11 @@ app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
 //   }
 // });
 
+/*
+ * Handles paths that aren't handled by any other route handler.
+ * It responds with `index.html` to support page refreshes with React Router.
+ * This must be the _last_ route, just before errorMiddleware.
+ */
 app.get('*', (req, res) => res.sendFile(`${reactStaticDir}/index.html`));
 
 app.use(errorMiddleware);

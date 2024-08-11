@@ -118,11 +118,6 @@ export function MedicationList({ medications, error }: Props) {
                         </div>
                       </CardTitle>
                     </CollapsibleTrigger>
-                    {/* <CardDescription>
-                      {medication.remaining < 10 &&
-                        medication.remaining !== null &&
-                        `Warning: ${medication.remaining} doses left`}
-                    </CardDescription> */}
                   </CardHeader>
                   <CollapsibleContent className="collapsible-content">
                     <CardContent>

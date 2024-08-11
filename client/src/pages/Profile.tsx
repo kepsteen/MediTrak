@@ -10,7 +10,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { useUser } from '@/components/useUser';
 
 export function Profile() {
@@ -22,7 +21,6 @@ export function Profile() {
           <div className="flex justify-center">
             <TabsList>
               <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="health">Health</TabsTrigger>
               <TabsTrigger value="connections">
                 {user?.role === 'Patient' ? 'Caregivers' : 'Patients'}
               </TabsTrigger>
@@ -49,42 +47,6 @@ export function Profile() {
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="password">Password</Label>
                     <Input type="password" id="password" />
-                  </div>
-                  <Button variant="secondary">Save Changes</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="health">
-              <Card className="mt-4">
-                <CardHeader>
-                  <CardTitle>Personal Health Information</CardTitle>
-                  <CardDescription>
-                    Update your health information.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="height">Height in</Label>
-                    <Input id="height" type="number" defaultValue="68" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="weight">Weight lbs</Label>
-                    <Input id="weight" type="number" defaultValue="120" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="allergies">Allergies</Label>
-                    <Textarea id="allergies" defaultValue="Pollen, Dust" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="bloodType">Blood Type</Label>
-                    <Input id="bloodType" defaultValue="O+" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="conditions">Medical Conditions</Label>
-                    <Textarea
-                      id="conditions"
-                      defaultValue="Asthma, Arthritis"
-                    />
                   </div>
                   <Button variant="secondary">Save Changes</Button>
                 </CardContent>
