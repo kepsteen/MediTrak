@@ -1,9 +1,15 @@
 import { AddScheduleForm } from '@/components/AddScheduleForm';
-import { Medication, ScheduleLog } from '../../data';
-import { useEffect, useState } from 'react';
+import {
+  fetchSchedules,
+  Medication,
+  ScheduleLog,
+  updatedScheduledStatus,
+} from '../../data';
+import { useCallback, useEffect, useState } from 'react';
 import { MedicationSchedule } from './MedicationSchedule';
 import { readToken } from '@/lib/data';
 import { useUser } from './useUser';
+import { useNavigate } from 'react-router';
 
 const days = [
   'Sunday',
@@ -17,13 +23,11 @@ const days = [
 
 type Props = {
   medications: Medication[];
-  updateMedication: (medication: Medication) => void;
   selectedPatientId: number;
 };
 
 export function MedicationScheduleLayout({
   medications,
-  updateMedication,
   selectedPatientId,
 }: Props) {
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
@@ -32,41 +36,48 @@ export function MedicationScheduleLayout({
   const [error, setError] = useState<unknown>();
   const { user } = useUser();
   const token = readToken();
-
+  const navigate = useNavigate();
+  if (!token) navigate('/');
+  console.log('render');
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
-  useEffect(() => {
-    const fetchSchedules = async (day: number) => {
+  const fetchSchedulesCallback = useCallback(
+    async (day: number, selectedPatientId: number, token: string) => {
       try {
-        const response = await fetch(
-          `/api/schedule/${days[day]}/${selectedPatientId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const schedules = (await response.json()) as ScheduleLog[];
+        const schedules = await fetchSchedules(day, selectedPatientId, token);
         setDailySchedules(schedules);
       } catch (error) {
         setError(error);
       }
-    };
-    setSelectedDateObj(selectedDateObj);
-    fetchSchedules(selectedDateObj.getDay());
-  }, [selectedDateObj, token, selectedPatientId]);
+    },
+    []
+  );
 
   useEffect(() => {
-    setUnscheduledMeds(
-      medications.filter((medication) => !medication.scheduled)
-    );
-  }, [medications]);
+    // Don't fetch the schedules if there is no patient selected
+    if (selectedPatientId && token) {
+      setSelectedDateObj(selectedDateObj);
+      fetchSchedulesCallback(
+        selectedDateObj.getDay(),
+        selectedPatientId,
+        token
+      );
+      setUnscheduledMeds(
+        medications.filter((medication) => !medication.scheduled)
+      );
+    }
+  }, [
+    fetchSchedulesCallback,
+    selectedDateObj,
+    selectedPatientId,
+    token,
+    medications,
+  ]);
 
   async function handleScheduleComplete(medication: Medication) {
+    if (!token) return;
     const updatedMedication = { ...medication, scheduled: true };
-    updateMedication(updatedMedication);
+    updatedScheduledStatus(updatedMedication, token);
     setUnscheduledMeds((prevMeds) =>
       prevMeds.filter((med) => med.medicationId !== medication.medicationId)
     );

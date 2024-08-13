@@ -12,7 +12,12 @@ import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
 import { useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
-import { Log, Schedule } from 'data';
+import {
+  Log,
+  Schedule,
+  updateLogStatus,
+  updateMedicationCount,
+} from '../../data';
 import { Separator } from './ui/separator';
 
 const days = [
@@ -90,6 +95,7 @@ export function MedicationSchedule({
   selectedDateObj,
   setSelectedDateObj,
 }: Props) {
+  // Tracks the clicked state of the dots
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
   const [error, setError] = useState<unknown>();
   const token = readToken();
@@ -101,7 +107,9 @@ export function MedicationSchedule({
   const selectedDateString = `${days[selectedDateObj.getDay()]} ${
     months[selectedDateObj.getMonth()]
   }, ${dates[selectedDateObj.getDate()]}`;
+
   const currentDateObj = new Date();
+
   const differenceInDays =
     (currentDateObj.getTime() - selectedDateObj.getTime()) /
     (1000 * 60 * 60 * 24);
@@ -124,30 +132,12 @@ export function MedicationSchedule({
     scheduleId: number
   ) {
     try {
-      const body = {
-        operation: dotStatusStates[indexToUpdate] ? 'increment' : 'decrement',
-      };
-      const response = await fetch(
-        `/api/medications/${medicationId}/inventory`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(body),
-        }
-      );
-      if (!response.ok) throw new Error(`Response: ${response.status}`);
-      const response2 = await fetch(`/api/log/${scheduleId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-      if (!response2.ok) throw new Error(`Response: ${response.status}`);
+      const operation = dotStatusStates[indexToUpdate]
+        ? 'increment'
+        : 'decrement';
+      if (!token) return;
+      await updateMedicationCount(medicationId, operation, token);
+      await updateLogStatus(scheduleId, operation, token);
     } catch (error) {
       setError(error);
     } finally {
