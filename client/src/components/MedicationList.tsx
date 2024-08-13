@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Medication } from '../../data';
+import { Medication } from '@/lib/data';
 import { useUser } from './useUser';
 import { DownloadButton } from './DownloadButton';
 

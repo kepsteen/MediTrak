@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from './ui/checkbox';
 import React, { useEffect, useState } from 'react';
-import { createSchedules, Medication, ScheduleLog } from 'data';
+import { createSchedules, Medication, ScheduleLog } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 import { readToken } from '@/lib/data';
 import { useUser } from './useUser';

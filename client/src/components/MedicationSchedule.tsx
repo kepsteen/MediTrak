@@ -17,7 +17,7 @@ import {
   ScheduleEntry,
   updateLogStatus,
   updateMedicationCount,
-} from '../../data';
+} from '@/lib/data';
 import { Separator } from './ui/separator';
 
 const days = [

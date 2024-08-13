@@ -4,7 +4,7 @@ import {
   Medication,
   ScheduleLog,
   updatedScheduledStatus,
-} from '../../data';
+} from '@/lib/data';
 import { useCallback, useEffect, useState } from 'react';
 import { MedicationSchedule } from './MedicationSchedule';
 import { readToken } from '@/lib/data';

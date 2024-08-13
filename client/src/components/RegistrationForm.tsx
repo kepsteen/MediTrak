@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from './ui/select';
 import { Switch } from './ui/switch';
-import { registerUser } from '../../data';
+import { registerUser } from '@/lib/data';
 
 const formSchema = z
   .object({

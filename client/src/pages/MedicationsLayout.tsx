@@ -7,7 +7,7 @@ import {
   fetchMedications,
   fetchRequests,
   Medication,
-} from '../../data';
+} from '@/lib/data';
 import { useUser } from '@/components/useUser';
 import { readToken } from '@/lib/data';
 import { useNavigate } from 'react-router';

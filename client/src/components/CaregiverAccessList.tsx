@@ -22,7 +22,7 @@ import {
   ConnectedUsers,
   fetchConnectedUsers,
   updateRequestStatus,
-} from '../../data';
+} from '@/lib/data';
 import { useCallback, useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
 import { useUser } from './useUser';

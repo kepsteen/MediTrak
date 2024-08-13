@@ -3,7 +3,7 @@ import { MedInfoDocument } from './MedInfoDocument';
 import { saveAs } from 'file-saver';
 import { Button } from './ui/button';
 import { File } from 'lucide-react';
-import { Medication } from 'data';
+import { Medication } from '@/lib/data';
 
 type Props = {
   medications: Medication[];

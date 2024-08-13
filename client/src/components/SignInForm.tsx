@@ -15,7 +15,7 @@ import { useUser } from './useUser';
 import { useToast } from './ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { validateUserCredentials } from '../../data';
+import { validateUserCredentials } from '@/lib/data';
 
 export function SignInForm() {
   const [username, setUserName] = useState('');

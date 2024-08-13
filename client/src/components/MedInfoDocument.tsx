@@ -6,7 +6,7 @@ import {
   Document,
   StyleSheet,
 } from '@react-pdf/renderer';
-import { Medication } from 'data';
+import { Medication } from '@/lib/data';
 
 const styles = StyleSheet.create({
   page: {
