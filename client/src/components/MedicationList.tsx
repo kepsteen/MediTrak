@@ -116,7 +116,10 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
                           <span>{medication.name}</span>
                           {medication.remaining < 10 &&
                             medication.remaining !== null && (
-                              <CircleAlert className="text-ruby" />
+                              <>
+                                <CircleAlert className="text-ruby" />
+                                <span className="sr-only">Running Low</span>
+                              </>
                             )}
                         </div>
                       </CardTitle>
