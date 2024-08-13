@@ -106,6 +106,11 @@ type MedicationUser = {
   notificationsEnabled: boolean;
 };
 
+/**
+ * Validates the data sent in the body of the request for a Medication type
+ * @param reqBody - request body
+ * @throws error if any of the fields are missing or are the incorrect type
+ */
 function validateMedication(reqBody: unknown): void {
   const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
     reqBody as Medication;
@@ -128,6 +133,11 @@ function validateMedication(reqBody: unknown): void {
   }
 }
 
+/**
+ * Validates the data in the body of the request for a Schedule type
+ * @param reqBody  - request body
+ * @throws error if any of the fields are missing or are the incorrect type
+ */
 function validateSchedule(reqBody: unknown): void {
   const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
     reqBody as ScheduleInput;
@@ -151,6 +161,11 @@ function validateSchedule(reqBody: unknown): void {
   if (!form) throw new ClientError(400, 'Valid form required');
 }
 
+/**
+ * Validates the data in the body of the request for a User type
+ * @param reqBody - request body
+ * @throws error if any of the fields are missing or are the incorrect type
+ */
 function validateUser(reqBody: unknown): void {
   const { username, password, role, dob, phoneNumber, notificationsEnabled } =
     reqBody as User;
@@ -170,6 +185,11 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
+/**
+ * Sends a msg to the User from the Twilio acct phone number
+ * @param msgBody - the msg to be sent to the patient
+ * @param phoneNumber - The patient's phone number
+ */
 async function createMessage(
   msgBody: string,
   phoneNumber: string
@@ -202,6 +222,7 @@ app.use(express.static(reactStaticDir));
 app.use(express.static(uploadsStaticDir));
 app.use(express.json());
 
+// Register a new User
 app.post('/api/sign-up', async (req, res, next) => {
   try {
     const { username, password, dob, role, phoneNumber, notificationsEnabled } =
@@ -237,6 +258,7 @@ app.post('/api/sign-up', async (req, res, next) => {
   }
 });
 
+// Sign in a user
 app.post('/api/sign-in', async (req, res, next) => {
   try {
     const { username, password } = req.body as Partial<Auth>;
@@ -270,6 +292,7 @@ app.post('/api/sign-in', async (req, res, next) => {
   }
 });
 
+// Add new medication to the Database
 app.post('/api/medications', authMiddleware, async (req, res, next) => {
   try {
     validateMedication(req.body);
@@ -309,6 +332,7 @@ app.post('/api/medications', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Get the medications of a user
 app.get('/api/medications/:userId', authMiddleware, async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -326,6 +350,7 @@ app.get('/api/medications/:userId', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Schedule a medication
 app.post('/api/schedule', authMiddleware, async (req, res, next) => {
   try {
     validateSchedule(req.body);
@@ -344,13 +369,17 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
 
     const scheduleValues = [];
     const logValues = [];
-    for (const day of daysOfWeek) {
+
+    // Prepares the schedule data to be inserted into the database from the template.
+    // The nested loops creates an array of schedule values arrays that has a length of daysOfWeek * timesPerDay.
+
+    for (const dayOfWeek of daysOfWeek) {
       for (let i = 0; i < timesPerDay; i++) {
         const timeOfDay = timeOptions[i];
         scheduleValues.push([
           medicationId,
           timeOfDay,
-          day,
+          dayOfWeek,
           userId,
           name,
           dosage,
@@ -358,9 +387,14 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
         ]);
       }
     }
+    // This approach avoids having to create a query for each subarray of scheduleValues.
+    // scheduleValues is mapped over to insert one row in the database for each subarray of scheduleValues.
+    // The index is used to increment the parameterized placeholders according to the number of values inserted into each row (7 in this case)
+    // e.g. values ($1, $2, $3, $4, $5, $6, $7),
+    //             ($8, $9, $10, $11, $12, $13, $14) ...
     const scheduleSql = `
-      INSERT INTO "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "userId", "name", "dosage", "form")
-      VALUES ${scheduleValues
+      insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "userId", "name", "dosage", "form")
+      values ${scheduleValues
         .map(
           (_, index) =>
             `($${index * 7 + 1}, $${index * 7 + 2}, $${index * 7 + 3}, $${
@@ -368,8 +402,9 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
             }, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`
         )
         .join(', ')}
-      RETURNING *;
+      returning *;
     `;
+    // The array is flattened so each item corresponds to the parameterized placeholder
     const scheduleResult = await db.query<ScheduleOutput>(
       scheduleSql,
       scheduleValues.flat()
@@ -377,9 +412,10 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
     for (const schedule of scheduleResult.rows) {
       logValues.push([medicationId, userId, schedule.scheduleId, false]);
     }
+    // The created medication Schedules are used to create a log in the database that tracks if the patient has taken the medication
     const logSql = `
-      INSERT INTO "medicationLogs" ("medicationId", "userId", "scheduleId", "taken")
-      VALUES ${logValues
+      insert into "medicationLogs" ("medicationId", "userId", "scheduleId", "taken")
+      values ${logValues
         .map(
           (_, index) =>
             `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${
@@ -387,14 +423,16 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
             })`
         )
         .join(', ')}
-      RETURNING *;
+      returning *;
     `;
     const logResult = await db.query(logSql, logValues.flat());
+
+    // After creating the rows in both tables the joinResult is returned in the response
     const joinSql = `
-      SELECT *
-      FROM "medicationSchedules" AS "ms"
-      JOIN "medicationLogs" AS "ml" USING ("scheduleId")
-      WHERE "ms"."userId" = $1 AND "ms"."dayOfWeek" = $2 AND "ms"."medicationId" = $3;
+      select *
+        from "medicationSchedules" AS "ms"
+        join "medicationLogs" AS "ml" USING ("scheduleId")
+        where "ms"."userId" = $1 and "ms"."dayOfWeek" = $2 and "ms"."medicationId" = $3;
     `;
     const joinResult = await db.query(joinSql, [
       userId,
@@ -407,6 +445,7 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Get the daily scheduled meds
 app.get(
   '/api/schedule/:day/:patientId',
   authMiddleware,
@@ -417,7 +456,7 @@ app.get(
       select *
         from "medicationSchedules" as "ms"
         join "medicationLogs" as "ml" using ("scheduleId")
-        where "ms"."userId" = $1 AND "dayOfWeek" = $2;
+        where "ms"."userId" = $1 and "dayOfWeek" = $2;
     `;
       const result = await db.query<ScheduleOutput>(sql, [patientId, day]);
       const schedules = result.rows;
@@ -455,6 +494,7 @@ app.get(
   }
 );
 
+// Update the scheduled attribute of the medication
 app.put('/api/medications', authMiddleware, async (req, res, next) => {
   try {
     const { scheduled, medicationId } = req.body;
@@ -478,6 +518,7 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Update the remaining amount in the Database
 app.put(
   '/api/medications/:id/inventory',
   authMiddleware,
@@ -512,19 +553,20 @@ app.put(
         };
       }
       const { remaining, medicationId } = medicationToUpdate;
-      const sql2 = `
+      const sqlUpdateRemaining = `
       update "medications"
         set "remaining" = $1
         where "medicationId" = $2
         returning *;
     `;
-      const result2 = await db.query<Medication>(sql2, [
-        remaining,
-        medicationId,
-      ]);
-      const [updatedMedication] = result2.rows;
+      const resultUpdateRemaining = await db.query<Medication>(
+        sqlUpdateRemaining,
+        [remaining, medicationId]
+      );
+      const [updatedMedication] = resultUpdateRemaining.rows;
       if (!updatedMedication) throw new ClientError(404, 'No medication found');
 
+      // If the remaining amount goes down to 0 send a text notification to the patient to refill the med
       if (remaining < 1 && operation === 'decrement') {
         const sqlMedicationUser = `
           select  "m"."name" as "medicationName",
@@ -541,8 +583,10 @@ app.put(
         const result = await db.query<MedicationUser>(sqlMedicationUser, [
           updatedMedication.medicationId,
         ]);
+
         const [medicationUser] = result.rows;
         if (medicationUser.notificationsEnabled) {
+          // If prescriber is null set it to the default msg
           const prescriber = medicationUser.prescriber
             ? `${medicationUser.prescriber}'s office`
             : "your doctor's office";
