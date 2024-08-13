@@ -34,6 +34,10 @@ export function CaregiverAccessList() {
   const token = readToken();
   const { user } = useUser();
 
+  /**
+   * Callback that fetches the connected users and updates the connectedUsers state
+   * on error updates the error state
+   */
   const fetchConnectedUsersCallback = useCallback(async () => {
     try {
       if (!token) return;

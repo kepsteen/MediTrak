@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
 import {
   Log,
-  Schedule,
+  ScheduleEntry,
   updateLogStatus,
   updateMedicationCount,
 } from '../../data';
@@ -80,7 +80,7 @@ const dates = [
   '31st',
 ];
 
-type ScheduleLog = Schedule & Log;
+type ScheduleLog = ScheduleEntry & Log;
 
 const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
@@ -114,6 +114,10 @@ export function MedicationSchedule({
     (currentDateObj.getTime() - selectedDateObj.getTime()) /
     (1000 * 60 * 60 * 24);
 
+  /**
+   * Updates the selectedDateObj state as user cycles through the days
+   * @param direction - string indicating which direction user clicked
+   */
   function handleDateChange(direction: string) {
     if (direction === 'previous') {
       setSelectedDateObj(
@@ -126,6 +130,13 @@ export function MedicationSchedule({
     }
   }
 
+  /**
+   * Handles a user click on the status dots which logs a medication and updates the UI to reflect the change
+   * @param medicationId - medicationId that the dot is associated with
+   * @param indexToUpdate - Index of the dotStatusStates to update to clicked or not clicked
+   * @param scheduleId - Schedule Id of the log in the database
+   * @returns
+   */
   async function handleClick(
     medicationId: number,
     indexToUpdate: number,

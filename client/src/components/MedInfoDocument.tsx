@@ -10,7 +10,7 @@ import { Medication } from 'data';
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: '#f3f3f3',
+    backgroundColor: '#fffff',
     padding: 30,
   },
   headerContainer: {

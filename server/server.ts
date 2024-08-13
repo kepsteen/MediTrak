@@ -220,7 +220,7 @@ app.post('/api/sign-up', async (req, res, next) => {
     const sql = `
       insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
         values ($1, $2, $3, $4, $5, $6)
-        returning "id", "username", "createdAt";
+        returning "userId", "username", "createdAt";
     `;
     const result = await db.query<User>(sql, [
       username,

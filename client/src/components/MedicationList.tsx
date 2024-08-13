@@ -75,28 +75,31 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
             medications.length !== 0 && 'min-[400px]:justify-between'
           }`}>
           {!isNaN(selectedPatientId) && (
-            <Link to={`/medications/add/${selectedPatientId}`}>
-              <Button size="md" className="bg-darkred">
-                Add New Medication
-                <span className="flex items-start ml-2">
-                  <Pill size={24} />
-                  <Plus size={18} />
-                </span>
-              </Button>
-            </Link>
+            <>
+              <Link to={`/medications/add/${selectedPatientId}`}>
+                <Button size="md" className="bg-darkred">
+                  Add New Medication
+                  <span className="flex items-start ml-2">
+                    <Pill size={24} />
+                    <Plus size={18} />
+                  </span>
+                </Button>
+              </Link>
+
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <DownloadButton medications={medications} />
+                {medications.length !== 0 && (
+                  <Button
+                    size="md"
+                    variant="outline"
+                    className="w-[6rem] my-2"
+                    onClick={toggleAll}>
+                    {isAllExpanded ? 'Close All' : 'Expand All'}
+                  </Button>
+                )}
+              </div>
+            </>
           )}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <DownloadButton medications={medications} />
-            {medications.length !== 0 && (
-              <Button
-                size="md"
-                variant="outline"
-                className="w-[6rem] my-2"
-                onClick={toggleAll}>
-                {isAllExpanded ? 'Close All' : 'Expand All'}
-              </Button>
-            )}
-          </div>
         </div>
         <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {medications.map((medication, index) => (

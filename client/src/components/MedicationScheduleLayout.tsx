@@ -41,6 +41,10 @@ export function MedicationScheduleLayout({
   console.log('render');
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
+  /**
+   * Callback function to fetch the schedules for the current day and update the daily schedules state
+   * on error sets the error state
+   */
   const fetchSchedulesCallback = useCallback(
     async (day: number, selectedPatientId: number, token: string) => {
       try {
@@ -74,6 +78,10 @@ export function MedicationScheduleLayout({
     medications,
   ]);
 
+  /**
+   * Sets the scheduled attribute of the medication to true and removes the medication from the unscheduled meds
+   * @param medication - medication that was scheduled
+   */
   async function handleScheduleComplete(medication: Medication) {
     if (!token) return;
     const updatedMedication = { ...medication, scheduled: true };

@@ -11,7 +11,7 @@ type Props = {
 
 export function DownloadButton({ medications }: Props) {
   async function downloadPdf() {
-    const fileName = 'test.pdf';
+    const fileName = 'MedicationList.pdf';
     const blob = await pdf(
       <MedInfoDocument medications={medications} />
     ).toBlob();
