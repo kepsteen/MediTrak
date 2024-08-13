@@ -402,6 +402,8 @@ export async function addMedication(
  * Creates a request to connect with the user with the provided username
  * @param username - username to request
  * @param token - jwt token
+ * @throws error if username does not match a user in the database
+ * @throws error if response is not ok
  */
 export async function createConnectionRequest(username: string, token: string) {
   const response = await fetch('/api/requests/add', {

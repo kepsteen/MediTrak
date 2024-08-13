@@ -58,6 +58,9 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
     },
   });
 
+  /**
+   * Updates the connectedUsers state when a new request is created
+   */
   async function updateConnectedUsers() {
     try {
       if (!token) return;

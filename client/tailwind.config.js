@@ -34,12 +34,22 @@ export default {
           '0%': { height: 'var(--radix-collapsible-content-height)' },
           '100%': { height: '0' },
         },
+        pillDump: {
+          '0%': { transform: 'rotate(0deg)' },
+          '50%, 100%': { transform: 'rotate(-45deg)' },
+        },
+        errorFall: {
+          '0%': { transform: 'translate(0, -50px)', opacity: '0' },
+          '50%, 100%': { transform: 'translate(0, 0)', opacity: '1' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'slide-down': 'slideDown 300ms ease-out',
         'slide-up': 'slideUp 300ms ease-out',
+        'pill-404': 'errorFall 2s ease-out infinite alternate',
+        'pill-bottle': 'pillDump 2s ease-in-out infinite alternate',
       },
       colors: {
         ruby: '#E11D47',
@@ -53,7 +63,7 @@ export default {
         greypink: '#ede5e5',
       },
       fontFamily: {
-        inter: ['Inter', 'serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       backgroundImage: {
         'bg-gradient': `linear-gradient(
