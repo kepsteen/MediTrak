@@ -86,15 +86,17 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
             </Link>
 
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <DownloadButton medications={medications} />
               {medications.length !== 0 && (
-                <Button
-                  size="md"
-                  variant="outline"
-                  className="w-[6rem] my-2"
-                  onClick={toggleAll}>
-                  {isAllExpanded ? 'Close All' : 'Expand All'}
-                </Button>
+                <>
+                  <DownloadButton medications={medications} />
+                  <Button
+                    size="md"
+                    variant="outline"
+                    className="w-[6rem] my-2"
+                    onClick={toggleAll}>
+                    {isAllExpanded ? 'Close All' : 'Expand All'}
+                  </Button>
+                </>
               )}
             </div>
           </>

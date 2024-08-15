@@ -36,6 +36,7 @@ import { registerUser } from '@/lib/data';
 
 const formSchema = z
   .object({
+    fullName: z.string(),
     username: z.string().min(2, {
       message: 'Username must be at least 2 characters.',
     }),
@@ -101,6 +102,7 @@ export function RegistrationForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: '',
       username: '',
       password: '',
       confirmPassword: '',
@@ -145,6 +147,19 @@ export function RegistrationForm() {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-8">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="username"

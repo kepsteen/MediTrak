@@ -225,8 +225,15 @@ app.use(express.json());
 // Register a new User
 app.post('/api/sign-up', async (req, res, next) => {
   try {
-    const { username, password, dob, role, phoneNumber, notificationsEnabled } =
-      req.body;
+    const {
+      fullName,
+      username,
+      password,
+      dob,
+      role,
+      phoneNumber,
+      notificationsEnabled,
+    } = req.body;
     validateUser(req.body);
     const checkUsernameSql = `
       select *
@@ -239,11 +246,12 @@ app.post('/api/sign-up', async (req, res, next) => {
     }
     const hashedPassword = await argon2.hash(password);
     const sql = `
-      insert into "users" ("username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-        values ($1, $2, $3, $4, $5, $6)
+      insert into "users" ("fullName" ,"username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
+        values ($1, $2, $3, $4, $5, $6, $7)
         returning "userId", "username", "createdAt";
     `;
     const result = await db.query<User>(sql, [
+      fullName,
       username,
       hashedPassword,
       role,
@@ -272,9 +280,9 @@ app.post('/api/sign-in', async (req, res, next) => {
     `;
     const result = await db.query<User>(sql, [username]);
     const [user] = result.rows;
-    if (!user) throw new ClientError(401, 'Invalid Login');
+    if (!user) throw new ClientError(401, 'Invalid username or password');
     if (!(await argon2.verify(user.hashedPassword, password))) {
-      throw new ClientError(401, 'Invalid Password');
+      throw new ClientError(401, 'Invalid username or password');
     }
     const payload = {
       userId: user.userId,

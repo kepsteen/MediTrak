@@ -151,17 +151,16 @@ export function MedicationSchedule({
         medicationId,
         operation
       );
-      if (updatedMedication.remaining < 1 && operation === 'decrement') {
-        await notifyMedicationDepletion(updatedMedication.medicationId);
-      }
-    } catch (error) {
-      toast({ title: String(error) });
-    } finally {
       setDotStatusStates((prevStates) =>
         prevStates.map((state, index) =>
           index === indexToUpdate ? !state : state
         )
       );
+      if (updatedMedication.remaining < 1 && operation === 'decrement') {
+        await notifyMedicationDepletion(updatedMedication.medicationId);
+      }
+    } catch (error) {
+      toast({ title: String(error) });
     }
   }
 
