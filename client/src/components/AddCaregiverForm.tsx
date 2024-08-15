@@ -12,11 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  createConnectionRequest,
-  fetchConnectedUsers,
-  readToken,
-} from '@/lib/data';
+import { createConnectionRequest, fetchConnectedUsers } from '@/lib/data';
 import { useState } from 'react';
 import { ConnectedUsers } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -48,7 +44,6 @@ type Props = {
 };
 
 export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
-  const token = readToken();
   const [error, setError] = useState<unknown | string>();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -63,8 +58,7 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
    */
   async function updateConnectedUsers() {
     try {
-      if (!token) return;
-      const connectedUsers = await fetchConnectedUsers(token);
+      const connectedUsers = await fetchConnectedUsers();
       setConnectedUsers(connectedUsers);
     } catch (error) {
       setError(error);
@@ -73,8 +67,7 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     try {
-      if (!token) return;
-      await createConnectionRequest(values.username, token);
+      await createConnectionRequest(values.username);
       closeModal();
       updateConnectedUsers();
     } catch (error) {

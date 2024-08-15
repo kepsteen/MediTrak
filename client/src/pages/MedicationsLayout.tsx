@@ -9,7 +9,6 @@ import {
   Medication,
 } from '@/lib/data';
 import { useUser } from '@/components/useUser';
-import { readToken } from '@/lib/data';
 import { useNavigate } from 'react-router';
 import {
   Select,
@@ -25,7 +24,6 @@ export function MedicationsLayout() {
   const [patients, setPatients] = useState<ConnectedUsers[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const { user } = useUser();
-  const token = readToken();
   const navigate = useNavigate();
 
   /**
@@ -44,7 +42,6 @@ export function MedicationsLayout() {
   /**
    * Sets the medication state variable to the fetched medications
    * @param patientId - Id of the selected patient
-   * @param token - jwt token of the current user
    */
   const fetchMedicationsCallback = useCallback(
     async (patientId: string) => {
@@ -65,31 +62,17 @@ export function MedicationsLayout() {
       navigate('/sign-in');
       return;
     }
-    if (!token) return;
     if (user?.role === 'Caregiver') fetchPatientsCallback();
     if (selectedPatientId) fetchMedicationsCallback(selectedPatientId);
     if (!selectedPatientId && user?.role === 'Patient')
       fetchMedicationsCallback(String(user?.userId));
   }, [
     user,
-    token,
     navigate,
     selectedPatientId,
     fetchMedicationsCallback,
     fetchPatientsCallback,
   ]);
-
-  // async function updateMedication(updatedMedication: Medication) {
-  //   if (!token) return;
-  //   await updatedScheduledStatus(updatedMedication, token);
-  //   setMedications((prevMeds) =>
-  //     prevMeds.map((med) =>
-  //       med.medicationId === updatedMedication.medicationId
-  //         ? updatedMedication
-  //         : med
-  //     )
-  //   );
-  // }
 
   if (error) {
     return (

@@ -24,14 +24,12 @@ import {
   updateRequestStatus,
 } from '@/lib/data';
 import { useCallback, useEffect, useState } from 'react';
-import { readToken } from '@/lib/data';
 import { useUser } from './useUser';
 
 export function CaregiverAccessList() {
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUsers[]>([]);
   const [error, setError] = useState<unknown>();
   const [isOpen, setIsOpen] = useState(false);
-  const token = readToken();
   const { user } = useUser();
 
   /**
@@ -40,13 +38,12 @@ export function CaregiverAccessList() {
    */
   const fetchConnectedUsersCallback = useCallback(async () => {
     try {
-      if (!token) return;
-      const requests = await fetchConnectedUsers(token);
+      const requests = await fetchConnectedUsers();
       setConnectedUsers(requests);
     } catch (error) {
       setError(error);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchConnectedUsersCallback();
@@ -58,8 +55,7 @@ export function CaregiverAccessList() {
     requestId: number
   ) {
     try {
-      if (!token) return;
-      await updateRequestStatus(isAccepted, requesterId, token);
+      await updateRequestStatus(isAccepted, requesterId);
     } catch (error) {
       setError(error);
     } finally {
