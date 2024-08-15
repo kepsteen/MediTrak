@@ -8,18 +8,36 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/components/useUser';
-import { useEffect } from 'react';
+import {
+  fetchNotificationSetting,
+  updateNotificationSetting,
+} from '@/lib/data';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 export function Profile() {
   const { user } = useUser();
   const navigate = useNavigate();
+  const [notificationSetting, setNotificationSetting] = useState(false);
+  const { toast } = useToast();
+
+  const notificationSettingCallback = useCallback(async () => {
+    try {
+      const setting = await fetchNotificationSetting();
+      setNotificationSetting(setting.notificationsEnabled);
+    } catch (error) {
+      toast({ title: String(error) });
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (!user) navigate('/sign-in');
-  }, [navigate, user]);
+    notificationSettingCallback();
+  }, [navigate, user, notificationSettingCallback]);
 
   return (
     <>
@@ -83,10 +101,23 @@ export function Profile() {
                   <CardHeader>
                     <CardTitle>Notification Settings</CardTitle>
                     <CardDescription>
-                      Change your notification settings.
+                      Change your text notification settings.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent></CardContent>
+                  <CardContent>
+                    <div className="flex items-center justify-center space-x-2">
+                      <p className="text-lg">Off</p>
+                      <Switch
+                        id="notification-setting"
+                        checked={notificationSetting}
+                        onCheckedChange={async () => {
+                          setNotificationSetting((prev) => !prev);
+                          await updateNotificationSetting();
+                        }}
+                      />
+                      <p className="text-lg">On</p>
+                    </div>
+                  </CardContent>
                 </Card>
               </TabsContent>
             </div>

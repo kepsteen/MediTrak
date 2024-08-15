@@ -13,11 +13,13 @@ import { MedStatusDot } from './ui/med-status-dot';
 import { useEffect, useState } from 'react';
 import {
   Log,
+  notifyMedicationDepletion,
   ScheduleEntry,
   updateLogStatus,
   updateMedicationCount,
 } from '@/lib/data';
 import { Separator } from './ui/separator';
+import { useToast } from './ui/use-toast';
 
 const days = [
   'Sunday',
@@ -96,7 +98,7 @@ export function MedicationSchedule({
 }: Props) {
   // Tracks the clicked state of the dots
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
-  const [error, setError] = useState<unknown>();
+  const { toast } = useToast();
 
   useEffect(() => {
     setDotStatusStates(dailySchedules.map((item) => item.taken));
@@ -144,26 +146,24 @@ export function MedicationSchedule({
       const operation = dotStatusStates[indexToUpdate]
         ? 'increment'
         : 'decrement';
-      await updateMedicationCount(medicationId, operation);
       await updateLogStatus(scheduleId, operation);
-    } catch (error) {
-      setError(error);
-    } finally {
+      const updatedMedication = await updateMedicationCount(
+        medicationId,
+        operation
+      );
       setDotStatusStates((prevStates) =>
         prevStates.map((state, index) =>
           index === indexToUpdate ? !state : state
         )
       );
+      if (updatedMedication.remaining < 1 && operation === 'decrement') {
+        await notifyMedicationDepletion(updatedMedication.medicationId);
+      }
+    } catch (error) {
+      toast({ title: String(error) });
     }
   }
 
-  if (error) {
-    return (
-      <>
-        <p>{`Error : ${error}`}</p>
-      </>
-    );
-  }
   return (
     <>
       <Card className="container max-w-[500px] mt-4">

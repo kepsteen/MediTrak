@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { createSchedules, Medication, ScheduleLog } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 import { useUser } from './useUser';
+import { useToast } from './ui/use-toast';
 
 const days = [
   {
@@ -72,10 +73,10 @@ export function AddScheduleForm({
     new Array(days.length).fill(false)
   );
   const [timesPerDay, setTimesPerDay] = useState<string>('');
-  const [error, setError] = useState<unknown>();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { user } = useUser();
+  const { toast } = useToast();
 
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
@@ -136,7 +137,7 @@ export function AddScheduleForm({
         }, 4000);
       }
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -147,13 +148,6 @@ export function AddScheduleForm({
     }
   }
 
-  if (error) {
-    return (
-      <>
-        <p>{`Error: ${error}`}</p>
-      </>
-    );
-  }
   return (
     <>
       <div className="max-w-[600px] max-h-[520px] mx-auto">

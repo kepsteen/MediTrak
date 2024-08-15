@@ -9,7 +9,6 @@ import {
   Medication,
 } from '@/lib/data';
 import { useUser } from '@/components/useUser';
-import { readToken } from '@/lib/data';
 import { useNavigate } from 'react-router';
 import {
   Select,
@@ -18,15 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
 
 export function MedicationsLayout() {
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [error, setError] = useState<unknown>();
   const [patients, setPatients] = useState<ConnectedUsers[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const { user } = useUser();
-  const token = readToken();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   /**
    * Sets the patients state variable to the patients that have given this account access to their data.
@@ -37,14 +36,13 @@ export function MedicationsLayout() {
       const requests = await fetchRequests();
       setPatients(requests.filter((request) => request.status === 'Accepted'));
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     }
-  }, []);
+  }, [toast]);
 
   /**
    * Sets the medication state variable to the fetched medications
    * @param patientId - Id of the selected patient
-   * @param token - jwt token of the current user
    */
   const fetchMedicationsCallback = useCallback(
     async (patientId: string) => {
@@ -53,11 +51,11 @@ export function MedicationsLayout() {
           const medications = await fetchMedications(patientId);
           setMedications(medications);
         } catch (error) {
-          setError(error);
+          toast({ title: String(error) });
         }
       }
     },
-    [user]
+    [user, toast]
   );
 
   useEffect(() => {
@@ -65,39 +63,17 @@ export function MedicationsLayout() {
       navigate('/sign-in');
       return;
     }
-    if (!token) return;
     if (user?.role === 'Caregiver') fetchPatientsCallback();
     if (selectedPatientId) fetchMedicationsCallback(selectedPatientId);
     if (!selectedPatientId && user?.role === 'Patient')
       fetchMedicationsCallback(String(user?.userId));
   }, [
     user,
-    token,
     navigate,
     selectedPatientId,
     fetchMedicationsCallback,
     fetchPatientsCallback,
   ]);
-
-  // async function updateMedication(updatedMedication: Medication) {
-  //   if (!token) return;
-  //   await updatedScheduledStatus(updatedMedication, token);
-  //   setMedications((prevMeds) =>
-  //     prevMeds.map((med) =>
-  //       med.medicationId === updatedMedication.medicationId
-  //         ? updatedMedication
-  //         : med
-  //     )
-  //   );
-  // }
-
-  if (error) {
-    return (
-      <>
-        <p>Error : {error.toString()}</p>
-      </>
-    );
-  }
 
   return (
     <>

@@ -12,15 +12,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  createConnectionRequest,
-  fetchConnectedUsers,
-  readToken,
-} from '@/lib/data';
+import { createConnectionRequest, fetchConnectedUsers } from '@/lib/data';
 import { useState } from 'react';
 import { ConnectedUsers } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { useToast } from './ui/use-toast';
 
 const FormSchema = z
   .object({
@@ -48,7 +45,6 @@ type Props = {
 };
 
 export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
-  const token = readToken();
   const [error, setError] = useState<unknown | string>();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -57,24 +53,23 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
       confirmUsername: '',
     },
   });
+  const { toast } = useToast();
 
   /**
    * Updates the connectedUsers state when a new request is created
    */
   async function updateConnectedUsers() {
     try {
-      if (!token) return;
-      const connectedUsers = await fetchConnectedUsers(token);
+      const connectedUsers = await fetchConnectedUsers();
       setConnectedUsers(connectedUsers);
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     }
   }
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     try {
-      if (!token) return;
-      await createConnectionRequest(values.username, token);
+      await createConnectionRequest(values.username);
       closeModal();
       updateConnectedUsers();
     } catch (error) {

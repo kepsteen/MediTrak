@@ -8,6 +8,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { MedicationSchedule } from './MedicationSchedule';
 import { useUser } from './useUser';
+import { useToast } from './ui/use-toast';
 
 const days = [
   'Sunday',
@@ -31,8 +32,8 @@ export function MedicationScheduleLayout({
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
   const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
-  const [error, setError] = useState<unknown>();
   const { user } = useUser();
+  const { toast } = useToast();
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   /**
@@ -45,10 +46,10 @@ export function MedicationScheduleLayout({
         const schedules = await fetchSchedules(day, selectedPatientId);
         setDailySchedules(schedules);
       } catch (error) {
-        setError(error);
+        toast({ title: String(error) });
       }
     },
-    []
+    [toast]
   );
 
   useEffect(() => {
@@ -74,18 +75,10 @@ export function MedicationScheduleLayout({
         prevMeds.filter((med) => med.medicationId !== medication.medicationId)
       );
     } catch (error) {
-      setError(error);
-      // Todo: toast the error instead because whole page wont display if there is an error or alert
+      toast({ title: String(error) });
     }
   }
 
-  if (error) {
-    return (
-      <>
-        <p>{`Error : ${error}`}</p>
-      </>
-    );
-  }
   return (
     <section className="gap-10 mb-4 lg:flex">
       {unScheduledMeds.length > 0 && (
