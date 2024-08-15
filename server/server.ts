@@ -517,7 +517,6 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
 });
 
 // Update the remaining amount in the Database
-// Todo: Is first query necessary
 app.put(
   '/api/medications/:id/inventory',
   authMiddleware,
@@ -530,45 +529,33 @@ app.put(
       if (operation !== 'decrement' && operation !== 'increment') {
         throw new ClientError(400, 'Valid operation required');
       }
-      const sql = `
-      select * from "medications"
-        where "medicationId" = $1;
-    `;
-      const result = await db.query<Medication>(sql, [id]);
-      const [medication] = result.rows;
-
-      if (!medication) throw new ClientError(404, 'no medication found');
-
-      let medicationToUpdate = { ...medication };
-      // Todo: medication.remaining --
-      if (operation === 'decrement') {
-        medicationToUpdate = {
-          ...medication,
-          remaining: medication.remaining - 1,
-        };
-      } else if (operation === 'increment') {
-        medicationToUpdate = {
-          ...medication,
-          remaining: medication.remaining + 1,
-        };
-      }
-      const { remaining, medicationId } = medicationToUpdate;
+      const sign = operation === 'increment' ? '+' : '-';
       const sqlUpdateRemaining = `
       update "medications"
-        set "remaining" = $1
-        where "medicationId" = $2
+        set "remaining" = "remaining" ${sign} 1
+        where "medicationId" = $1
         returning *;
     `;
       const resultUpdateRemaining = await db.query<Medication>(
         sqlUpdateRemaining,
-        [remaining, medicationId]
+        [id]
       );
       const [updatedMedication] = resultUpdateRemaining.rows;
       if (!updatedMedication) throw new ClientError(404, 'No medication found');
+      res.status(200).json(updatedMedication);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
-      // If the remaining amount goes down to 0 send a text notification to the patient to refill the med
-      if (remaining < 1 && operation === 'decrement') {
-        const sqlMedicationUser = `
+app.post(
+  '/api/medications/:id/notify-depletion',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const sqlMedicationUser = `
           select  "m"."name" as "medicationName",
                   "m"."dosage",
                   "m"."form",
@@ -580,21 +567,18 @@ app.put(
             inner join "users" AS "u" on "m"."userId" = "u"."userId"
             where "m"."medicationId" = $1;
         `;
-        const result = await db.query<MedicationUser>(sqlMedicationUser, [
-          updatedMedication.medicationId,
-        ]);
+      const result = await db.query<MedicationUser>(sqlMedicationUser, [id]);
 
-        const [medicationUser] = result.rows;
-        if (medicationUser.notificationsEnabled) {
-          // If prescriber is null set it to the default msg
-          const prescriber = medicationUser.prescriber
-            ? `${medicationUser.prescriber}'s office`
-            : "your doctor's office";
-          const msg = `Please call ${prescriber} to refill ${medicationUser.medicationName} ${medicationUser.dosage} ${medicationUser.form}.`;
-          createMessage(msg, medicationUser.phoneNumber);
-        }
+      const [medicationUser] = result.rows;
+      console.log('medicationUser', medicationUser);
+      if (medicationUser.notificationsEnabled) {
+        // If prescriber is null set it to the default msg
+        const prescriber = medicationUser.prescriber
+          ? `${medicationUser.prescriber}'s office`
+          : "your doctor's office";
+        const msg = `Please call ${prescriber} to refill ${medicationUser.medicationName} ${medicationUser.dosage} ${medicationUser.form}.`;
+        createMessage(msg, medicationUser.phoneNumber);
       }
-      res.status(200).json(updatedMedication);
     } catch (err) {
       next(err);
     }

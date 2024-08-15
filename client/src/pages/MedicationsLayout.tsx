@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
 
 export function MedicationsLayout() {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -25,6 +26,7 @@ export function MedicationsLayout() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const { user } = useUser();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   /**
    * Sets the patients state variable to the patients that have given this account access to their data.
@@ -75,11 +77,9 @@ export function MedicationsLayout() {
   ]);
 
   if (error) {
-    return (
-      <>
-        <p>Error : {error.toString()}</p>
-      </>
-    );
+    toast({
+      title: `${error}`,
+    });
   }
 
   return (

@@ -25,12 +25,14 @@ import {
 } from '@/lib/data';
 import { useCallback, useEffect, useState } from 'react';
 import { useUser } from './useUser';
+import { useToast } from './ui/use-toast';
 
 export function CaregiverAccessList() {
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUsers[]>([]);
   const [error, setError] = useState<unknown>();
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
+  const { toast } = useToast();
 
   /**
    * Callback that fetches the connected users and updates the connectedUsers state
@@ -82,7 +84,9 @@ export function CaregiverAccessList() {
   }
 
   if (error) {
-    return <div>{`Error: ${error}`}</div>;
+    toast({
+      title: `${error}`,
+    });
   }
 
   return (

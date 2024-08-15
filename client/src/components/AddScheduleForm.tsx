@@ -18,6 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { createSchedules, Medication, ScheduleLog } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 import { useUser } from './useUser';
+import { useToast } from './ui/use-toast';
 
 const days = [
   {
@@ -76,6 +77,7 @@ export function AddScheduleForm({
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { user } = useUser();
+  const { toast } = useToast();
 
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
@@ -148,11 +150,9 @@ export function AddScheduleForm({
   }
 
   if (error) {
-    return (
-      <>
-        <p>{`Error: ${error}`}</p>
-      </>
-    );
+    toast({
+      title: `${error}`,
+    });
   }
   return (
     <>

@@ -8,6 +8,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { MedicationSchedule } from './MedicationSchedule';
 import { useUser } from './useUser';
+import { useToast } from './ui/use-toast';
 
 const days = [
   'Sunday',
@@ -33,6 +34,7 @@ export function MedicationScheduleLayout({
   const [dailySchedules, setDailySchedules] = useState<ScheduleLog[]>([]);
   const [error, setError] = useState<unknown>();
   const { user } = useUser();
+  const { toast } = useToast();
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
   /**
@@ -75,16 +77,13 @@ export function MedicationScheduleLayout({
       );
     } catch (error) {
       setError(error);
-      // Todo: toast the error instead because whole page wont display if there is an error or alert
     }
   }
 
   if (error) {
-    return (
-      <>
-        <p>{`Error : ${error}`}</p>
-      </>
-    );
+    toast({
+      title: `${error}`,
+    });
   }
   return (
     <section className="gap-10 mb-4 lg:flex">
