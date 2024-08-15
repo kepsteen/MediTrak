@@ -7,13 +7,13 @@ type Props = {
 export function MedStatusDot({ isClicked, onClick }: Props) {
   return (
     <>
-      <div
+      <button
         onClick={onClick}
         className={`w-[24px] h-[24px] border shadow-md transition-ease border-gray-400 rounded-full ${
           isClicked ? 'bg-emerald-600' : 'bg-white'
         }`}>
         {isClicked}
-      </div>
+      </button>
     </>
   );
 }

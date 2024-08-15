@@ -474,16 +474,14 @@ app.get(
               where "scheduleId = $1
               returning *;
           `;
-            const result = await db.query<Log>(sql, [schedule.scheduleId]);
+            await db.query<Log>(sql, [schedule.scheduleId]);
             const sql2 = `
             update "medicationSchedules"
               set "updatedAt" = NOW()
               where "scheduleId" = $1
               returning *;
           `;
-            const result2 = await db.query<ScheduleOutput>(sql2, [
-              schedule.scheduleId,
-            ]);
+            await db.query<ScheduleOutput>(sql2, [schedule.scheduleId]);
           }
         }
       }
@@ -519,6 +517,7 @@ app.put('/api/medications', authMiddleware, async (req, res, next) => {
 });
 
 // Update the remaining amount in the Database
+// Todo: Is first query necessary
 app.put(
   '/api/medications/:id/inventory',
   authMiddleware,
@@ -541,6 +540,7 @@ app.put(
       if (!medication) throw new ClientError(404, 'no medication found');
 
       let medicationToUpdate = { ...medication };
+      // Todo: medication.remaining --
       if (operation === 'decrement') {
         medicationToUpdate = {
           ...medication,

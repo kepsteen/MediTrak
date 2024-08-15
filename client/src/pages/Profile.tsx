@@ -32,6 +32,7 @@ export function Profile() {
                 <TabsTrigger value="connections">
                   {user?.role === 'Patient' ? 'Caregivers' : 'Patients'}
                 </TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
               </TabsList>
             </div>
             <div className="flex justify-center">
@@ -76,6 +77,17 @@ export function Profile() {
               </TabsContent>
               <TabsContent value="connections">
                 <CaregiverAccessList />
+              </TabsContent>
+              <TabsContent value="notifications">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Notification Settings</CardTitle>
+                    <CardDescription>
+                      Change your notification settings.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent></CardContent>
+                </Card>
               </TabsContent>
             </div>
           </Tabs>

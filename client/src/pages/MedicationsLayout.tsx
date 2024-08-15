@@ -33,14 +33,13 @@ export function MedicationsLayout() {
    * on error sets Error state.
    */
   const fetchPatientsCallback = useCallback(async () => {
-    if (!token) return;
     try {
-      const requests = await fetchRequests(token);
+      const requests = await fetchRequests();
       setPatients(requests.filter((request) => request.status === 'Accepted'));
     } catch (error) {
       setError(error);
     }
-  }, [token]);
+  }, []);
 
   /**
    * Sets the medication state variable to the fetched medications
@@ -48,10 +47,10 @@ export function MedicationsLayout() {
    * @param token - jwt token of the current user
    */
   const fetchMedicationsCallback = useCallback(
-    async (patientId: string, token: string) => {
+    async (patientId: string) => {
       if (user) {
         try {
-          const medications = await fetchMedications(patientId, token);
+          const medications = await fetchMedications(patientId);
           setMedications(medications);
         } catch (error) {
           setError(error);
@@ -68,9 +67,9 @@ export function MedicationsLayout() {
     }
     if (!token) return;
     if (user?.role === 'Caregiver') fetchPatientsCallback();
-    if (selectedPatientId) fetchMedicationsCallback(selectedPatientId, token);
+    if (selectedPatientId) fetchMedicationsCallback(selectedPatientId);
     if (!selectedPatientId && user?.role === 'Patient')
-      fetchMedicationsCallback(String(user?.userId), token);
+      fetchMedicationsCallback(String(user?.userId));
   }, [
     user,
     token,
@@ -95,7 +94,7 @@ export function MedicationsLayout() {
   if (error) {
     return (
       <>
-        <p>{`Error : ${error}`}</p>
+        <p>Error : {error.toString()}</p>
       </>
     );
   }

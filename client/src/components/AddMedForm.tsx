@@ -91,15 +91,6 @@ export function AddMedForm({ patientId }: Props) {
     toast({
       title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
     });
-    form.reset({
-      name: '',
-      dosage: '',
-      form: 'Tablet',
-      notes: '',
-      prescriber: '',
-      amount: '',
-      remaining: '',
-    });
   }
   return (
     <>

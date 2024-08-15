@@ -65,20 +65,13 @@ export type Log = {
   updatedAt: string;
 };
 
-export type CaregiverAccess = {
-  userId: number;
-  connectedUserId: number;
-  grantedAt: string;
-  active: string;
-};
-
 export type Requests = {
   requestId: number;
   requestedId: number;
   requesterId: number;
   requesterUsername: string;
   requesterFullName: string;
-  status: string;
+  status: 'Accepted' | 'Pending';
   requestedAt: string;
   updatedAt: string;
 };
@@ -91,7 +84,7 @@ export type ConnectedUsers = {
   requesterId: number;
   requesterUsername: string;
   requesterFullName: string;
-  status: string;
+  status: 'Accepted' | 'Pending';
   requestedAt: string;
   updatedAt: string;
 };
@@ -146,11 +139,11 @@ export function readToken(): string | undefined {
 
 /**
  * Fetches all the Requests for access of the current user
- * @param token - jwt token that contains the user data
  * @throws error if response is not ok
  * @returns requests
  */
-export async function fetchRequests(token: string) {
+export async function fetchRequests() {
+  const token = readToken();
   const response = await fetch('/api/requests', {
     method: 'GET',
     headers: {
@@ -165,11 +158,11 @@ export async function fetchRequests(token: string) {
 /**
  * Fetches all the medications for the patient
  * @param patientId - the userId of the selected patient
- * @param token - jwt token that contains the user data
  * @throws error if response is not ok
  * @returns medications
  */
-export async function fetchMedications(patientId: string, token: string) {
+export async function fetchMedications(patientId: string) {
+  const token = readToken();
   const response = await fetch(`/api/medications/${patientId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -181,13 +174,10 @@ export async function fetchMedications(patientId: string, token: string) {
 /**
  * Updates the scheduled status to true
  * @param updatedMedication - medication with scheduled property set to true
- * @param token - jwt token
  * @throws error if response is not ok
  */
-export async function updatedScheduledStatus(
-  updatedMedication: Medication,
-  token: string
-) {
+export async function updatedScheduledStatus(updatedMedication: Medication) {
+  const token = readToken();
   const response = await fetch('/api/medications', {
     method: 'PUT',
     headers: {
@@ -203,15 +193,11 @@ export async function updatedScheduledStatus(
  * fetch the schedules for the selected day
  * @param day - day of the week e.g. 'Monday'
  * @param selectedPatientId
- * @param token - jwt token
  * @throws error if response is not ok
  * @returns schedules array
  */
-export async function fetchSchedules(
-  day: number,
-  selectedPatientId: number,
-  token: string
-) {
+export async function fetchSchedules(day: number, selectedPatientId: number) {
+  const token = readToken();
   const response = await fetch(
     `/api/schedule/${days[day]}/${selectedPatientId}`,
     {
@@ -229,14 +215,13 @@ export async function fetchSchedules(
  * Updates the remaining count for the given medicationId in the database
  * @param medicationId
  * @param operation - Increment or Decrement
- * @param token - jwt token
  * @throws error if response is not ok
  */
 export async function updateMedicationCount(
   medicationId: number,
-  operation: string,
-  token: string
+  operation: string
 ) {
+  const token = readToken();
   const response = await fetch(`/api/medications/${medicationId}/inventory`, {
     method: 'PUT',
     headers: {
@@ -252,14 +237,10 @@ export async function updateMedicationCount(
  * Updates the taken attribute of the log in the database
  * @param scheduleId
  * @param operation - Increment or Decrement
- * @param token - jwt token
  * @throws error if response is not ok
  */
-export async function updateLogStatus(
-  scheduleId: number,
-  operation: string,
-  token: string
-) {
+export async function updateLogStatus(scheduleId: number, operation: string) {
+  const token = readToken();
   const response = await fetch(`/api/log/${scheduleId}`, {
     method: 'PUT',
     headers: {
@@ -273,11 +254,11 @@ export async function updateLogStatus(
 
 /**
  * fetch the Connection Requests for the current user
- * @param token - jwt token
  * @returns all the requests including pending and accepted
  * @throws error if response is not ok
  */
-export async function fetchConnectedUsers(token: string) {
+export async function fetchConnectedUsers() {
+  const token = readToken();
   const response = await fetch('/api/requests', {
     method: 'GET',
     headers: {
@@ -293,14 +274,13 @@ export async function fetchConnectedUsers(token: string) {
  * Updates the request status to accepted or deletes the request if it is denied
  * @param isAccepted - true if user accepts the request
  * @param requesterId - id of the user who sent the request
- * @param token - jwt token
  * @throws error if response is not ok
  */
 export async function updateRequestStatus(
   isAccepted: boolean,
-  requesterId: number,
-  token: string
+  requesterId: number
 ) {
+  const token = readToken();
   const response = await fetch('/api/requests/respond', {
     method: 'PUT',
     headers: {
@@ -357,13 +337,12 @@ export async function validateUserCredentials(user: SimpleUser) {
 /**
  * Uses the schedule template to create schedules in the database for each day and time
  * @param scheduleTemplate -
- * @param token - jwt token
  * @throws error if response is not ok
  */
 export async function createSchedules(
-  scheduleTemplate: ScheduleTemplate,
-  token: string
+  scheduleTemplate: ScheduleTemplate
 ): Promise<ScheduleLog[]> {
+  const token = readToken();
   const response = await fetch('/api/schedule', {
     method: 'POST',
     headers: {
@@ -380,13 +359,10 @@ export async function createSchedules(
 /**
  * Adds the medication to the database
  * @param medication
- * @param token - jwt token
  * @throws error if response is not ok
  */
-export async function addMedication(
-  medication: MedicationInput,
-  token: string
-) {
+export async function addMedication(medication: MedicationInput) {
+  const token = readToken();
   const response = await fetch('/api/medications', {
     method: 'POST',
     headers: {
@@ -401,11 +377,11 @@ export async function addMedication(
 /**
  * Creates a request to connect with the user with the provided username
  * @param username - username to request
- * @param token - jwt token
  * @throws error if username does not match a user in the database
  * @throws error if response is not ok
  */
-export async function createConnectionRequest(username: string, token: string) {
+export async function createConnectionRequest(username: string) {
+  const token = readToken();
   const response = await fetch('/api/requests/add', {
     method: 'POST',
     headers: {

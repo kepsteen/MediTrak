@@ -11,7 +11,6 @@ import {
 import { HoverClickPopover } from './ui/hover-click-popover';
 import { MedStatusDot } from './ui/med-status-dot';
 import { useEffect, useState } from 'react';
-import { readToken } from '@/lib/data';
 import {
   Log,
   ScheduleEntry,
@@ -87,18 +86,17 @@ const medTimes = ['Morning', 'Noon', 'Evening', 'Bed time'];
 type Props = {
   dailySchedules: ScheduleLog[];
   selectedDateObj: Date;
-  setSelectedDateObj: (value: Date) => void;
+  onDateChange: (value: Date) => void;
 };
 
 export function MedicationSchedule({
   dailySchedules,
   selectedDateObj,
-  setSelectedDateObj,
+  onDateChange,
 }: Props) {
   // Tracks the clicked state of the dots
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
   const [error, setError] = useState<unknown>();
-  const token = readToken();
 
   useEffect(() => {
     setDotStatusStates(dailySchedules.map((item) => item.taken));
@@ -120,11 +118,11 @@ export function MedicationSchedule({
    */
   function handleDateChange(direction: string) {
     if (direction === 'previous') {
-      setSelectedDateObj(
+      onDateChange(
         new Date(selectedDateObj.setDate(selectedDateObj.getDate() - 1))
       );
     } else if (direction === 'next') {
-      setSelectedDateObj(
+      onDateChange(
         new Date(selectedDateObj.setDate(selectedDateObj.getDate() + 1))
       );
     }
@@ -146,9 +144,8 @@ export function MedicationSchedule({
       const operation = dotStatusStates[indexToUpdate]
         ? 'increment'
         : 'decrement';
-      if (!token) return;
-      await updateMedicationCount(medicationId, operation, token);
-      await updateLogStatus(scheduleId, operation, token);
+      await updateMedicationCount(medicationId, operation);
+      await updateLogStatus(scheduleId, operation);
     } catch (error) {
       setError(error);
     } finally {
@@ -218,17 +215,20 @@ export function MedicationSchedule({
                           {selectedDateObj.valueOf() <=
                             currentDateObj.valueOf() &&
                             differenceInDays < 7 && (
-                              <MedStatusDot
-                                medicationId={schedule.medicationId}
-                                isClicked={dotStatusStates[index]}
-                                onClick={() =>
-                                  handleClick(
-                                    schedule.medicationId,
-                                    index,
-                                    schedule.scheduleId
-                                  )
-                                }
-                              />
+                              <>
+                                <MedStatusDot
+                                  medicationId={schedule.medicationId}
+                                  isClicked={dotStatusStates[index]}
+                                  onClick={() =>
+                                    handleClick(
+                                      schedule.medicationId,
+                                      index,
+                                      schedule.scheduleId
+                                    )
+                                  }
+                                />
+                                <span className="sr-only">{`Log ${schedule.name}`}</span>
+                              </>
                             )}
                         </li>
                       );
