@@ -12,9 +12,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { readToken } from '@/lib/data';
+import {
+  createConnectionRequest,
+  fetchConnectedUsers,
+  readToken,
+} from '@/lib/data';
 import { useState } from 'react';
-import { ConnectedUsers } from 'data';
+import { ConnectedUsers } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -53,17 +57,15 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
       confirmUsername: '',
     },
   });
-  async function fetchConnectedUsers() {
+
+  /**
+   * Updates the connectedUsers state when a new request is created
+   */
+  async function updateConnectedUsers() {
     try {
-      const response = await fetch('/api/requests', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
-      const requestsResult = (await response.json()) as ConnectedUsers[];
-      setConnectedUsers(requestsResult);
+      if (!token) return;
+      const connectedUsers = await fetchConnectedUsers(token);
+      setConnectedUsers(connectedUsers);
     } catch (error) {
       setError(error);
     }
@@ -71,24 +73,10 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
 
   async function onSubmit(values: z.infer<typeof FormSchema>) {
     try {
-      const response = await fetch('/api/requests/add', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ username: values.username }),
-      });
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError(`Username ${values.username} does not exist.`);
-          return;
-        } else {
-          throw new Error(`Response status: ${response.status}`);
-        }
-      }
+      if (!token) return;
+      await createConnectionRequest(values.username, token);
       closeModal();
-      fetchConnectedUsers();
+      updateConnectedUsers();
     } catch (error) {
       setError(error);
     }

@@ -11,15 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, useUser } from './useUser';
+import { useUser } from './useUser';
 import { useToast } from './ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-
-type AuthData = {
-  user: User;
-  token: string;
-};
+import { validateUserCredentials } from '@/lib/data';
 
 export function SignInForm() {
   const [username, setUserName] = useState('');
@@ -32,19 +28,8 @@ export function SignInForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const checkUser = { username, password };
-      const response = await fetch('/api/sign-in', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        body: JSON.stringify(checkUser),
-      });
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-      }
-      const { user, token } = (await response.json()) as AuthData;
-      handleSignIn(user, token);
+      const authData = await validateUserCredentials({ username, password });
+      handleSignIn(authData.user, authData.token);
       toast({ title: `User ${username} successfully logged in.` });
       navigate('/medications');
     } catch (error) {

@@ -15,9 +15,8 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from './ui/checkbox';
 import React, { useEffect, useState } from 'react';
-import { Medication, ScheduleLog } from 'data';
+import { createSchedules, Medication, ScheduleLog } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
-import { readToken } from '@/lib/data';
 import { useUser } from './useUser';
 
 const days = [
@@ -56,7 +55,7 @@ type Props = {
   onScheduleComplete: (medication: Medication) => void;
   currentDay: string;
   dailySchedules: ScheduleLog[];
-  setDailySchedules: (value: ScheduleLog[]) => void;
+  onDayChange: (value: ScheduleLog[]) => void;
   selectedPatientId: number;
 };
 
@@ -65,9 +64,10 @@ export function AddScheduleForm({
   onScheduleComplete,
   currentDay,
   dailySchedules,
-  setDailySchedules,
+  onDayChange,
   selectedPatientId,
 }: Props) {
+  // An array of booleans which is updated to reflect the checked status of the checkboxes
   const [checkedState, setCheckedState] = useState<boolean[]>(
     new Array(days.length).fill(false)
   );
@@ -75,11 +75,16 @@ export function AddScheduleForm({
   const [error, setError] = useState<unknown>();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const token = readToken();
   const { user } = useUser();
 
   if (user?.role === 'Patient') selectedPatientId = user?.userId;
 
+  // A 4-second loading screen is implemented to prevent a flush
+  // resync error in the radix ui checkboxes.
+  // where rapid clicks could cause database consistency errors.
+  // The progress bar increments by 25% each second to provide visual feedback.
+  // This artificial delay ensures proper synchronization between
+  // frontend state and backend operations.
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isLoading) {
@@ -110,6 +115,7 @@ export function AddScheduleForm({
     try {
       if (+timesPerDay > 0) {
         const daysAdded: string[] = [];
+        // Adds each day checked by the user to the daysAdded array
         for (let i = 0; i < checkedState.length; i++) {
           if (checkedState[i]) daysAdded.push(days[i].label);
         }
@@ -124,19 +130,9 @@ export function AddScheduleForm({
           currentDay,
         };
 
-        const response = await fetch('/api/schedule', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(newSchedule),
-        });
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const newSchedules = (await response.json()) as ScheduleLog[];
+        const newSchedules = await createSchedules(newSchedule);
         setTimeout(() => {
-          setDailySchedules(dailySchedules.concat(newSchedules));
+          onDayChange(dailySchedules.concat(newSchedules));
         }, 4000);
       }
     } catch (error) {
@@ -221,14 +217,6 @@ export function AddScheduleForm({
           </CardContent>
         </Card>
       </div>
-      {/* {isLoading && (
-        <div className="absolute top-[180px] left-[40px] right-[40px] bottom-[50%] bg-white rounded-md ">
-          <div className="flex flex-col justify-center h-full gap-4 mx-10">
-            <p className="text-2xl text-center text-redblack">{`Adding ${medication.name} to your schedule.`}</p>
-            <Progress value={progress} />
-          </div>
-        </div>
-      )} */}
     </>
   );
 }

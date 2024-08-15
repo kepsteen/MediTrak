@@ -32,10 +32,8 @@ import {
   SelectValue,
 } from './ui/select';
 import { Switch } from './ui/switch';
+import { registerUser } from '@/lib/data';
 
-const regexSpecialCharacter = new RegExp(
-  '[`!@#$%^&*()_+\\-=\\[\\]{};\':"\\\\|,.<>/?~\\s]'
-);
 const formSchema = z
   .object({
     username: z.string().min(2, {
@@ -63,9 +61,12 @@ const formSchema = z
     }
   )
   .superRefine(({ password }, checkPassComplexity) => {
-    const containsUppercase = (ch: string) => /[A-Z]/.test(ch);
-    const containsLowercase = (ch: string) => /[a-z]/.test(ch);
-    const containsSpecialChar = (ch: string) => regexSpecialCharacter.test(ch);
+    const containsUppercase = (ch: string) => /[A-Z]/.test(ch); // Regex testing for Uppercase letter
+    const containsLowercase = (ch: string) => /[a-z]/.test(ch); // Regex testing for Lowercase letter
+    const regexSpecialCharacter = new RegExp(
+      '[`!@#$%^&*()_+\\-=\\[\\]{};\':"\\\\|,.<>/?~\\s]'
+    );
+    const containsSpecialChar = (ch: string) => regexSpecialCharacter.test(ch); // Regex testing for a Special Character
     let countOfUpperCase = 0,
       countOfLowerCase = 0,
       countOfNumbers = 0,
@@ -73,7 +74,7 @@ const formSchema = z
 
     for (let i = 0; i < password.length; i++) {
       const ch = password.charAt(i);
-      if (!isNaN(+ch)) countOfNumbers++;
+      if (!isNaN(+ch)) countOfNumbers++; // Testing for a number
       else if (containsUppercase(ch)) countOfUpperCase++;
       else if (containsLowercase(ch)) countOfLowerCase++;
       else if (containsSpecialChar(ch)) countOfSpecialChar++;
@@ -113,23 +114,11 @@ export function RegistrationForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const newUser = { ...values };
-      const response = await fetch('/api/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        body: JSON.stringify(newUser),
-      });
-      if (!response.ok) {
-        if (response.status === 409) {
-          setError(`Username ${values.username} is already taken.`);
-          return;
-        }
-        throw new Error(`Response status: ${response.status}`);
-      }
+      await registerUser(newUser);
       toast({ title: `Successfully created account ${values.username}` });
       navigate('/sign-in');
     } catch (error) {
+      // Set error due to error if error is type unknown
       setError(String(error));
     }
   }

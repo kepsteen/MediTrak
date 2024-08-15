@@ -18,8 +18,12 @@ import {
   DialogTrigger,
 } from './ui/dialog';
 import { AddCaregiverForm } from './AddCaregiverForm';
-import { ConnectedUsers } from 'data';
-import { useEffect, useState } from 'react';
+import {
+  ConnectedUsers,
+  fetchConnectedUsers,
+  updateRequestStatus,
+} from '@/lib/data';
+import { useCallback, useEffect, useState } from 'react';
 import { readToken } from '@/lib/data';
 import { useUser } from './useUser';
 
@@ -30,26 +34,23 @@ export function CaregiverAccessList() {
   const token = readToken();
   const { user } = useUser();
 
-  useEffect(() => {
-    async function fetchConnectedUsers() {
-      try {
-        const response = await fetch('/api/requests', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok)
-          throw new Error(`Response status: ${response.status}`);
-        const requestsResult = (await response.json()) as ConnectedUsers[];
-        setConnectedUsers(requestsResult);
-      } catch (error) {
-        setError(error);
-      }
+  /**
+   * Callback that fetches the connected users and updates the connectedUsers state
+   * on error updates the error state
+   */
+  const fetchConnectedUsersCallback = useCallback(async () => {
+    try {
+      if (!token) return;
+      const requests = await fetchConnectedUsers(token);
+      setConnectedUsers(requests);
+    } catch (error) {
+      setError(error);
     }
-
-    fetchConnectedUsers();
   }, [token]);
+
+  useEffect(() => {
+    fetchConnectedUsersCallback();
+  }, [fetchConnectedUsersCallback]);
 
   async function handleResponse(
     isAccepted: boolean,
@@ -57,15 +58,8 @@ export function CaregiverAccessList() {
     requestId: number
   ) {
     try {
-      const response = await fetch('/api/requests/respond', {
-        method: 'PUT',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isAccepted, requesterId }),
-      });
-      if (!response.ok) throw new Error(`Response status: ${response.status}`);
+      if (!token) return;
+      await updateRequestStatus(isAccepted, requesterId, token);
     } catch (error) {
       setError(error);
     } finally {

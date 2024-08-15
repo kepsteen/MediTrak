@@ -26,6 +26,9 @@ export function Header() {
     };
   }, []);
 
+  /**
+   * Opens the hamburger menu
+   */
   function handleClick() {
     setIsOpen(!isOpen);
   }

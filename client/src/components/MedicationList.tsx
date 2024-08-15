@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Medication } from '../../data';
+import { Medication } from '@/lib/data';
 import { useUser } from './useUser';
 import { DownloadButton } from './DownloadButton';
 
@@ -68,13 +68,13 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
   }
 
   return (
-    <>
-      <section className="container pb-[40px] ">
-        <div
-          className={`flex flex-wrap gap-2 items-center justify-center ${
-            medications.length !== 0 && 'min-[400px]:justify-between'
-          }`}>
-          {!isNaN(selectedPatientId) && (
+    <section className="container pb-[40px] ">
+      <div
+        className={`flex flex-wrap gap-2 items-center justify-center ${
+          medications.length !== 0 && 'min-[400px]:justify-between'
+        }`}>
+        {!isNaN(selectedPatientId) && (
+          <>
             <Link to={`/medications/add/${selectedPatientId}`}>
               <Button size="md" className="bg-darkred">
                 Add New Medication
@@ -84,67 +84,71 @@ export function MedicationList({ medications, selectedPatientId }: Props) {
                 </span>
               </Button>
             </Link>
-          )}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <DownloadButton medications={medications} />
-            {medications.length !== 0 && (
-              <Button
-                size="md"
-                variant="outline"
-                className="w-[6rem] my-2"
-                onClick={toggleAll}>
-                {isAllExpanded ? 'Close All' : 'Expand All'}
-              </Button>
-            )}
-          </div>
-        </div>
-        <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {medications.map((medication, index) => (
-            <li key={`${medication.name}${index}`}>
-              <Collapsible
-                open={openStates[index]}
-                onOpenChange={() => toggleCard(index)}>
-                <Card>
-                  <CardHeader className="hover:bg-greypink">
-                    <CollapsibleTrigger>
-                      <CardTitle className="flex items-center text-redblack">
-                        <MedicationIcon type={medication.form} />
-                        <div className="flex justify-between w-full">
-                          <span>{medication.name}</span>
-                          {medication.remaining < 10 &&
-                            medication.remaining !== null && (
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <DownloadButton medications={medications} />
+              {medications.length !== 0 && (
+                <Button
+                  size="md"
+                  variant="outline"
+                  className="w-[6rem] my-2"
+                  onClick={toggleAll}>
+                  {isAllExpanded ? 'Close All' : 'Expand All'}
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+        {medications.map((medication, index) => (
+          <li key={`${medication.name}${index}`}>
+            <Collapsible
+              open={openStates[index]}
+              onOpenChange={() => toggleCard(index)}>
+              <Card>
+                <CardHeader className="hover:bg-greypink">
+                  <CollapsibleTrigger>
+                    <CardTitle className="flex items-center text-redblack">
+                      <MedicationIcon type={medication.form} />
+                      <div className="flex justify-between w-full">
+                        <span>{medication.name}</span>
+                        {medication.remaining < 10 &&
+                          medication.remaining !== null && (
+                            <>
                               <CircleAlert className="text-ruby" />
-                            )}
-                        </div>
-                      </CardTitle>
-                    </CollapsibleTrigger>
-                  </CardHeader>
-                  <CollapsibleContent className="collapsible-content">
-                    <CardContent>
-                      <p>
-                        <b>Dosage: </b>
-                        {`${medication.dosage} ${medication.form}`}
-                      </p>
-                      <p>
-                        <b>Prescriber: </b>
-                        {medication.prescriber}
-                      </p>
-                      <p>
-                        <b>Doses Remaining: </b>
-                        {medication.remaining}
-                      </p>
-                      <p>
-                        <b>Notes: </b>
-                        {medication.notes}
-                      </p>
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </>
+                              <span className="sr-only">Running Low</span>
+                            </>
+                          )}
+                      </div>
+                    </CardTitle>
+                  </CollapsibleTrigger>
+                </CardHeader>
+                <CollapsibleContent className="collapsible-content">
+                  <CardContent>
+                    <p>
+                      <b>Dosage: </b>
+                      {`${medication.dosage} ${medication.form}`}
+                    </p>
+                    <p>
+                      <b>Prescriber: </b>
+                      {medication.prescriber}
+                    </p>
+                    <p>
+                      <b>Doses Remaining: </b>
+                      {medication.remaining}
+                    </p>
+                    <p>
+                      <b>Notes: </b>
+                      {medication.notes}
+                    </p>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
