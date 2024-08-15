@@ -98,7 +98,6 @@ export function MedicationSchedule({
 }: Props) {
   // Tracks the clicked state of the dots
   const [dotStatusStates, setDotStatusStates] = useState<boolean[]>([]);
-  const [error, setError] = useState<unknown>();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -156,7 +155,7 @@ export function MedicationSchedule({
         await notifyMedicationDepletion(updatedMedication.medicationId);
       }
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     } finally {
       setDotStatusStates((prevStates) =>
         prevStates.map((state, index) =>
@@ -166,11 +165,6 @@ export function MedicationSchedule({
     }
   }
 
-  if (error) {
-    toast({
-      title: `${error}`,
-    });
-  }
   return (
     <>
       <Card className="container max-w-[500px] mt-4">

@@ -401,6 +401,10 @@ export async function createConnectionRequest(username: string) {
   }
 }
 
+/**
+ * Sends a text notification to the user if Medication Depleted
+ * @param medicationId
+ */
 export async function notifyMedicationDepletion(medicationId: number) {
   const token = readToken();
   const response = await fetch(
@@ -414,4 +418,32 @@ export async function notifyMedicationDepletion(medicationId: number) {
     }
   );
   if (!response.ok) throw new Error(`Response status: ${response.status}`);
+}
+
+export async function fetchNotificationSetting() {
+  const token = readToken();
+  const response = await fetch(`/api/notifications-setting`, {
+    method: 'GET',
+    headers: {
+      'Content-type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error(`Response status: ${response.status}`);
+  const notificationSetting = await response.json();
+  return notificationSetting;
+}
+
+export async function updateNotificationSetting() {
+  const token = readToken();
+  const response = await fetch(`/api/notifications-setting`, {
+    method: 'PUT',
+    headers: {
+      'Content-type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error(`Response status: ${response.status}`);
+  const notificationSetting = await response.json();
+  return notificationSetting;
 }

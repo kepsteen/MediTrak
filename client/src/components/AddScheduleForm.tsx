@@ -73,7 +73,6 @@ export function AddScheduleForm({
     new Array(days.length).fill(false)
   );
   const [timesPerDay, setTimesPerDay] = useState<string>('');
-  const [error, setError] = useState<unknown>();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { user } = useUser();
@@ -138,7 +137,7 @@ export function AddScheduleForm({
         }, 4000);
       }
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -149,11 +148,6 @@ export function AddScheduleForm({
     }
   }
 
-  if (error) {
-    toast({
-      title: `${error}`,
-    });
-  }
   return (
     <>
       <div className="max-w-[600px] max-h-[520px] mx-auto">

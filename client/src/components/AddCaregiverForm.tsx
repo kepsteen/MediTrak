@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { ConnectedUsers } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { useToast } from './ui/use-toast';
 
 const FormSchema = z
   .object({
@@ -52,6 +53,7 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
       confirmUsername: '',
     },
   });
+  const { toast } = useToast();
 
   /**
    * Updates the connectedUsers state when a new request is created
@@ -61,7 +63,7 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
       const connectedUsers = await fetchConnectedUsers();
       setConnectedUsers(connectedUsers);
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     }
   }
 

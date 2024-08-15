@@ -21,7 +21,6 @@ import { useToast } from '@/components/ui/use-toast';
 
 export function MedicationsLayout() {
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [error, setError] = useState<unknown>();
   const [patients, setPatients] = useState<ConnectedUsers[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const { user } = useUser();
@@ -37,9 +36,9 @@ export function MedicationsLayout() {
       const requests = await fetchRequests();
       setPatients(requests.filter((request) => request.status === 'Accepted'));
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     }
-  }, []);
+  }, [toast]);
 
   /**
    * Sets the medication state variable to the fetched medications
@@ -52,11 +51,11 @@ export function MedicationsLayout() {
           const medications = await fetchMedications(patientId);
           setMedications(medications);
         } catch (error) {
-          setError(error);
+          toast({ title: String(error) });
         }
       }
     },
-    [user]
+    [user, toast]
   );
 
   useEffect(() => {
@@ -75,12 +74,6 @@ export function MedicationsLayout() {
     fetchMedicationsCallback,
     fetchPatientsCallback,
   ]);
-
-  if (error) {
-    toast({
-      title: `${error}`,
-    });
-  }
 
   return (
     <>

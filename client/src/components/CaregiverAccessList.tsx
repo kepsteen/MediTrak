@@ -29,7 +29,6 @@ import { useToast } from './ui/use-toast';
 
 export function CaregiverAccessList() {
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUsers[]>([]);
-  const [error, setError] = useState<unknown>();
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useUser();
   const { toast } = useToast();
@@ -43,9 +42,9 @@ export function CaregiverAccessList() {
       const requests = await fetchConnectedUsers();
       setConnectedUsers(requests);
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchConnectedUsersCallback();
@@ -59,7 +58,7 @@ export function CaregiverAccessList() {
     try {
       await updateRequestStatus(isAccepted, requesterId);
     } catch (error) {
-      setError(error);
+      toast({ title: String(error) });
     } finally {
       if (isAccepted) {
         setConnectedUsers(
@@ -81,12 +80,6 @@ export function CaregiverAccessList() {
 
   function closeModal() {
     setIsOpen(false);
-  }
-
-  if (error) {
-    toast({
-      title: `${error}`,
-    });
   }
 
   return (

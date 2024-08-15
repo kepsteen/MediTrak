@@ -710,6 +710,45 @@ app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
   }
 });
 
+app.get(
+  '/api/notifications-setting',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const sql = `
+      select "notificationsEnabled"
+        from "users"
+        where "userId" = $1;
+    `;
+      const result = await db.query(sql, [req.user?.userId]);
+      const [notificationSetting] = result.rows;
+      res.json(notificationSetting);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+app.put(
+  '/api/notifications-setting',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const sql = `
+      update "users"
+        set "notificationsEnabled" = not "notificationsEnabled"
+        where "userId" = $1
+        returning "notificationsEnabled";
+    `;
+      const result = await db.query(sql, [req.user?.userId]);
+      const [setting] = result.rows;
+      res.status(201).json(setting);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.
