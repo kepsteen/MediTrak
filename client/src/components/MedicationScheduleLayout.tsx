@@ -23,11 +23,13 @@ const days = [
 type Props = {
   medications: Medication[];
   selectedPatientId: number;
+  onMedicationUpdate: (value: Medication[]) => void;
 };
 
 export function MedicationScheduleLayout({
   medications,
   selectedPatientId,
+  onMedicationUpdate,
 }: Props) {
   const [unScheduledMeds, setUnscheduledMeds] = useState<Medication[]>([]);
   const [selectedDateObj, setSelectedDateObj] = useState<Date>(new Date());
@@ -57,7 +59,7 @@ export function MedicationScheduleLayout({
     if (selectedPatientId) {
       setSelectedDateObj(selectedDateObj);
       setUnscheduledMeds(
-        medications.filter((medication) => !medication.scheduled)
+        medications.filter((medication) => medication.scheduled === false)
       );
       fetchSchedulesCallback(selectedDateObj.getDay(), selectedPatientId);
     }
@@ -69,11 +71,18 @@ export function MedicationScheduleLayout({
    */
   async function handleScheduleComplete(medication: Medication) {
     try {
-      const updatedMedication = { ...medication, scheduled: true };
-      await updatedScheduledStatus(updatedMedication);
-      setUnscheduledMeds((prevMeds) =>
-        prevMeds.filter((med) => med.medicationId !== medication.medicationId)
+      setUnscheduledMeds(
+        unScheduledMeds.filter(
+          (med) => med.medicationId !== medication.medicationId
+        )
       );
+      const updatedMedication = { ...medication, scheduled: true };
+      onMedicationUpdate(
+        medications.map((med) =>
+          med.medicationId === medication.medicationId ? updatedMedication : med
+        )
+      );
+      await updatedScheduledStatus(updatedMedication);
     } catch (error) {
       toast({ title: String(error) });
     }

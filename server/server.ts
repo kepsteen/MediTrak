@@ -578,7 +578,6 @@ app.post(
       const result = await db.query<MedicationUser>(sqlMedicationUser, [id]);
 
       const [medicationUser] = result.rows;
-      console.log('medicationUser', medicationUser);
       if (medicationUser.notificationsEnabled) {
         // If prescriber is null set it to the default msg
         const prescriber = medicationUser.prescriber
