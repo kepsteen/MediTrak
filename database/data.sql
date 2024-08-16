@@ -22,7 +22,7 @@ insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBi
   values ('caregiver3', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Caregiver', 'Caregiver Three', '03/15/1997', '9499222057', true);
 
 insert into "accessRequests" ("requestedId", "requesterId", "requesterUsername", "requesterFullName", "status")
-values  (2, 1, 'patient1', 'Patient One', 'Pending'),
+values  (2, 1, 'patient', 'Patient One', 'Pending'),
         (2, 3, 'patient2', 'Patient Two', 'Accepted'),
         (3, 4, 'caregiver2', 'Caregiver Two', 'Pending'),
         (6, 5, 'patient3', 'Patient Three', 'Accepted'),
