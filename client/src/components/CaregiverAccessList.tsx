@@ -160,7 +160,10 @@ export function CaregiverAccessList() {
                   )}
                 </div>
                 <p className="text-sm text-gray-400">
-                  @{connectedUser.requesterUsername}
+                  @
+                  {connectedUser.requesterId === user?.userId
+                    ? connectedUser.requestedUsername
+                    : connectedUser.requesterUsername}
                 </p>
               </div>
             </div>
