@@ -136,7 +136,7 @@ export function AddScheduleForm({
           onDayChange(dailySchedules.concat(newSchedules));
         }, 4000);
       }
-      onScheduleComplete(medication);
+      // onScheduleComplete(medication);
     } catch (error) {
       toast({ title: String(error) });
     } finally {
@@ -144,6 +144,7 @@ export function AddScheduleForm({
         setIsLoading(false);
         setCheckedState(new Array(days.length).fill(false));
         setTimesPerDay('');
+        onScheduleComplete(medication);
       }, 4000);
     }
   }
