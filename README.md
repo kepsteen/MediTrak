@@ -63,12 +63,13 @@
 
 <img width="300" alt="Screenshot 2024-08-08 at 1 11 31 PM" src="https://github.com/user-attachments/assets/ea9182cd-bb47-4b04-a2d9-918be0819ceb">
 <br />
-https://github.com/user-attachments/assets/de154de3-4578-4600-b662-75e75286e36c
+
+https://github.com/user-attachments/assets/ce16f201-9fb4-4927-8176-2ab53f91ce46
+
+
 <br />
 
-
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+<p align="left"></p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
