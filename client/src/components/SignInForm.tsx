@@ -30,7 +30,9 @@ export function SignInForm() {
     try {
       const authData = await validateUserCredentials({ username, password });
       handleSignIn(authData.user, authData.token);
-      toast({ title: `User ${username} successfully logged in.` });
+      toast({
+        title: `User ${username} successfully logged in.`,
+      });
       navigate('/medications');
     } catch (error) {
       setError(`${error}`);
@@ -45,8 +47,25 @@ export function SignInForm() {
             <CardHeader>
               <CardTitle className="text-2xl text-redblack">Login</CardTitle>
               <CardDescription>
-                Enter your username and password below to login to your account.
+                Enter your username and password below to login to your account
+                or choose a guest account.
               </CardDescription>
+              <div className="flex justify-between">
+                <Button
+                  onClick={() => {
+                    setUserName('patient');
+                    setPassword('password');
+                  }}>
+                  Guest - Patient
+                </Button>
+                <Button
+                  onClick={() => {
+                    setUserName('caregiver');
+                    setPassword('password');
+                  }}>
+                  Guest - Caregiver
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="grid gap-4">
               {error && (

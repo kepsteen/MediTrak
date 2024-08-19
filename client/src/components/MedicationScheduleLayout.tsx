@@ -48,7 +48,7 @@ export function MedicationScheduleLayout({
         const schedules = await fetchSchedules(day, selectedPatientId);
         setDailySchedules(schedules);
       } catch (error) {
-        toast({ title: String(error) });
+        toast({ title: String(error), variant: 'destructive' });
       }
     },
     [toast]

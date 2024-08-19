@@ -36,7 +36,7 @@ export function MedicationsLayout() {
       const requests = await fetchRequests();
       setPatients(requests.filter((request) => request.status === 'Accepted'));
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     }
   }, [toast]);
 

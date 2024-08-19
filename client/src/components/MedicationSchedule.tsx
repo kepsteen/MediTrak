@@ -160,7 +160,7 @@ export function MedicationSchedule({
         await notifyMedicationDepletion(updatedMedication.medicationId);
       }
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     }
   }
 

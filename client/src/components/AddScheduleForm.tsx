@@ -138,7 +138,7 @@ export function AddScheduleForm({
       }
       // onScheduleComplete(medication);
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     } finally {
       setTimeout(() => {
         setIsLoading(false);

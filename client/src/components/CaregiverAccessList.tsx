@@ -42,7 +42,7 @@ export function CaregiverAccessList() {
       const requests = await fetchConnectedUsers();
       setConnectedUsers(requests);
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     }
   }, [toast]);
 
@@ -58,7 +58,7 @@ export function CaregiverAccessList() {
     try {
       await updateRequestStatus(isAccepted, requesterId);
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     } finally {
       if (isAccepted) {
         setConnectedUsers(
