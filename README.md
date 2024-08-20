@@ -52,7 +52,8 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#purpose">Purpose</a></li>
-        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="#packages">Packages</a></li>
         <li><a href="#challenges">Challenges Faced</a></li>
       </ul>
     </li>
@@ -86,17 +87,20 @@ https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 
 
 
-### Built With
+### Stack
 
 * [![React][React.js]][React-url]
 * [![TypeScript][TypeScript.com]][TypeScript-url]
 * [![Node][NodeJS.com]][NodeJS-url]
 * [![Express][Express.js.com]][Express.js-url]
 * [![PostgreSQL][Postgres.com]][Postgres-url]
+
+### Packages
 * Shadcn UI Components
 * React-pdf
 * React-hook-form
 * zod - validation
+* twilio
 
 ### Challenges Faced
 <p>Developing MediTrak in just three weeks posed numerous challenges, from planning and designing to building and deploying. I hoped to streamline this process by using the Shadcn ui library, but this decision brought its own hurdles. While Shadcn allows for easy copy-pasting of components into the codebase, modifying their functionality to fit my use cases proved difficult, requiring frequent referral to the Shadcn and Radix documentation.</p>
