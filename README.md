@@ -26,16 +26,19 @@
 <br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img width="408" alt="Screenshot 2024-08-11 at 12 25 23 AM" src="https://github.com/user-attachments/assets/1a1c1efd-3a06-4589-b5a9-7d372b1f85b0">
   </a>
 
 <h3 align="center">MediTrak</h3>
 
   <p align="center">
-    A Full-Stack application for patients and caregivers to more easily manage their medications.
+    An accessible Full-Stack web application for patients and Caregivers to more easily manage their medications
     <br />
-    <br />
-    <a href="https://github.com/kepsteen/MediTrak">View Demo</a>
+    <a href="http://ec2-54-193-74-245.us-west-1.compute.amazonaws.com">View Demo</a>
+    ·
+    <a href="https://github.com/kepsteen/MediTrak/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    ·
+    <a href="https://github.com/kepsteen/MediTrak/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -49,10 +52,18 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#challenges">Challenges Faced</a></li>
       </ul>
     </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -61,15 +72,14 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img width="300" alt="Screenshot 2024-08-08 at 1 11 31 PM" src="https://github.com/user-attachments/assets/ea9182cd-bb47-4b04-a2d9-918be0819ceb">
-<br />
 
-https://github.com/user-attachments/assets/ce16f201-9fb4-4927-8176-2ab53f91ce46
+https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
+
+### Purpose
+
+<p>As a certified nursing assistant who worked on the frontlines during the pandemic, I gained valuable insights into the healthcare system. I wanted to leverage the skills I had acquired in the inpatient setting to create a meaningful project. The idea came to me after hearing about my mother's struggles to manage my ill grandfather's 20+ medications while living across the country. She diligently maintained countless spreadsheets, updating them each time his medication changed. Hearing about this and numerous incidents where home health nurses had made mistakes dispensing his medication due to not having access to up-to-date information inspired me to build an application to solve these issues. The app would serve patients like my grandfather and caregivers like my mother, providing an accessible solution for medication management.</p>
 
 
-<br />
-
-<p align="left"></p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -78,8 +88,55 @@ https://github.com/user-attachments/assets/ce16f201-9fb4-4927-8176-2ab53f91ce46
 ### Built With
 
 * [![React][React.js]][React-url]
-* 
+* [![TypeScript][TypeScript.com]][TypeScript-url]
+* [![Node][NodeJS.com]][NodeJS-url]
+* [![Express][Express.js.com]][Express.js-url]
+* [![PostgreSQL][Postgres.com]][Postgres-url]
+* Shadcn UI Components
+* React-pdf
+* React-hook-form
+* zod - validation
 
+### Challenges Faced
+<p>Developing MediTrak in just three weeks posed numerous challenges, from planning and designing to building and deploying. I hoped to streamline this process by using the Shadcn ui library, but this decision brought its own hurdles. While Shadcn allows for easy copy-pasting of components into the codebase, modifying their functionality to fit my use cases proved difficult, requiring frequent referral to the Shadcn and Radix documentation.</p>
+<p>The most persistent issue arose while developing the medication schedules feature. When users add medications to their list, they are prompted to schedule each medication in the schedule tab consecutively. However, if a user moved too quickly between medications, a flush resync error would be thrown by the Radix UI checkboxes in the form. Despite thoroughly examining the documentation and researching similar issues faced by other users, I found no solutions that wouldn't compromise the user experience. I determined that the ongoing process needed about four seconds to complete when the component re-rendered. To address this, I implemented a four-second progress bar that appears after each form submission, allowing the process to finish before the user proceeds.
+</p>
+<p>While using multiple new technologies like Shadcn, Zod, React Hook Form, and React PDF presented various challenges, I embraced the opportunity to expand my skill set. By diligently reading the documentation and persevering through debugging when issues arose, I not only overcame these hurdles but also gained valuable knowledge and experience. Tackling these challenges head-on allowed me to grow as a developer and deliver a more robust, user-friendly application.</p>
+</br>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+To get a local copy up and running follow these simple example steps.
+
+
+### Installation
+1. (Optional) Get a free API Key from Twilio https://www.twilio.com/docs 
+2. Clone the repo
+   ```sh
+   git clone https://github.com/kepsteen/MediTrak
+   ```
+3. Install NPM packages
+   ```sh
+   npm install
+   ```
+4. Create a .env from the example
+   ```js
+   PORT=8080
+   DATABASE_URL=postgres://dev:dev@localhost/changeMe
+   TOKEN_SECRET=changeMe
+   //Optional
+   TWILIO_ACCOUNT_SID=changeMe
+   TWILIO_AUTH_TOKEN=changeMe
+   ```
+5. Change git remote url to avoid accidental pushes to base project
+   ```sh
+   git remote set-url origin github_username/repo_name
+   git remote -v # confirm the changes
+   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -89,38 +146,44 @@ https://github.com/user-attachments/assets/ce16f201-9fb4-4927-8176-2ab53f91ce46
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Users can register for an account and sign in
+- [ ] Users can add medications to their list
+- [ ] Users can view their medicaitons List
+- [ ] Users can schedule medications
+- [ ] Caregivers can request access to patient accounts
+- [ ] Users can download a pdf of their medication List
+- [ ] Users can sign up for text message notifications when a medication runs out
 
+See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
+<!-- CONTRIBUTING -->
+## Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+<p> Email - codyepstein@gmail.com</p>
+<a href="https://www.linkedin.com/in/cody-epstein">LinkedIn</a>
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
@@ -136,7 +199,7 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
 [license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://linkedin.com/in/cody-epstein
 [product-screenshot]: images/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
@@ -154,3 +217,11 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com 
+[Postgres.com]: https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white
+[Postgres-url]: https://www.postgresql.org/
+[NodeJS.com]: https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white
+[NodeJS-url]: https://nodejs.org/en
+[Express.js.com]: https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB
+[Express.js-url]: https://expressjs.com/
+[TypeScript.com]: https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white
+[TypeScript-url]: https://www.typescriptlang.org/
