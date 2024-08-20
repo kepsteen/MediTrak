@@ -19,7 +19,7 @@ export function LandingPage() {
           asChild
           size="lg"
           className="text-[1.5rem] shadow-sm bg-darkred">
-          <Link to="/sign-up">Start Tracking now</Link>
+          <Link to="/sign-in">Start Tracking now</Link>
         </Button>
       </section>
     </>

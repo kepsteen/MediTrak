@@ -21,7 +21,8 @@ import { AddCaregiverForm } from './AddCaregiverForm';
 import {
   ConnectedUsers,
   fetchConnectedUsers,
-  updateRequestStatus,
+  acceptRequest,
+  deleteRequest,
 } from '@/lib/data';
 import { useCallback, useEffect, useState } from 'react';
 import { useUser } from './useUser';
@@ -42,7 +43,7 @@ export function CaregiverAccessList() {
       const requests = await fetchConnectedUsers();
       setConnectedUsers(requests);
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     }
   }, [toast]);
 
@@ -50,17 +51,20 @@ export function CaregiverAccessList() {
     fetchConnectedUsersCallback();
   }, [fetchConnectedUsersCallback]);
 
+  /**
+   * Handles the user's response to a pending Request
+   * @param isAccepted - True if user accepts the request
+   * @param requesterId - Id of the user who sent the request
+   * @param requestId - Id of the request
+   */
   async function handleResponse(
     isAccepted: boolean,
     requesterId: number,
     requestId: number
   ) {
     try {
-      await updateRequestStatus(isAccepted, requesterId);
-    } catch (error) {
-      toast({ title: String(error) });
-    } finally {
       if (isAccepted) {
+        await acceptRequest(requesterId);
         setConnectedUsers(
           connectedUsers.map((connectedUser) =>
             connectedUser.requestId === requestId
@@ -69,12 +73,15 @@ export function CaregiverAccessList() {
           )
         );
       } else {
+        await deleteRequest(requesterId);
         setConnectedUsers(
           connectedUsers.filter(
             (connectedUser) => connectedUser.requestId !== requestId
           )
         );
       }
+    } catch (error) {
+      toast({ title: String(error), variant: 'destructive' });
     }
   }
 

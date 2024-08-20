@@ -22,7 +22,7 @@ import {
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
-import { addMedication } from '@/lib/data';
+import { addMedication, medNames } from '@/lib/data';
 
 const formSchema = z
   .object({
@@ -79,6 +79,10 @@ export function AddMedForm({ patientId }: Props) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Random med placeholder for ease of use
+  const randomIndex = Math.floor(Math.random() * 100);
+  const randomMed = medNames[randomIndex];
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const newMedication = { ...values, scheduled: false, userId: patientId };
     for (const key in newMedication) {
@@ -103,7 +107,7 @@ export function AddMedForm({ patientId }: Props) {
               <FormItem className="col-span-2">
                 <FormLabel>Generic or Brand name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input placeholder={randomMed} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

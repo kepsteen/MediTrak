@@ -30,7 +30,7 @@ export function Profile() {
       const setting = await fetchNotificationSetting();
       setNotificationSetting(setting.notificationsEnabled);
     } catch (error) {
-      toast({ title: String(error) });
+      toast({ title: String(error), variant: 'destructive' });
     }
   }, [toast]);
 

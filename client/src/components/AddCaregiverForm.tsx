@@ -73,7 +73,7 @@ export function AddCaregiverForm({ closeModal, setConnectedUsers }: Props) {
       closeModal();
       updateConnectedUsers();
     } catch (error) {
-      setError(error);
+      setError(String(error));
     }
   }
 
