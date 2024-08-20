@@ -117,7 +117,7 @@ https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 
 
 
-### Challenges Faced
+### Challenges
 <p>Developing MediTrak in just three weeks posed numerous challenges, from planning and designing to building and deploying. I hoped to streamline this process by using the Shadcn ui library, but this decision brought its own hurdles. While Shadcn allows for easy copy-pasting of components into the codebase, modifying their functionality to fit my use cases proved difficult, requiring frequent referral to the Shadcn and Radix documentation.</p>
 <p>The most persistent issue arose while developing the medication schedules feature. When users add medications to their list, they are prompted to schedule each medication in the schedule tab consecutively. However, if a user moved too quickly between medications, a flush resync error would be thrown by the Radix UI checkboxes in the form. Despite thoroughly examining the documentation and researching similar issues faced by other users, I found no solutions that wouldn't compromise the user experience. I determined that the ongoing process needed about four seconds to complete when the component re-rendered. To address this, I implemented a four-second progress bar that appears after each form submission, allowing the process to finish before the user proceeds.
 </p>
