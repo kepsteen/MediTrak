@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Remove when used */
 import 'dotenv/config';
 import express from 'express';
-import pg from 'pg';
+import pg, { Client } from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
@@ -468,33 +468,37 @@ app.get(
     `;
       const result = await db.query<ScheduleOutput>(sql, [patientId, day]);
       const schedules = result.rows;
-      // Todo: Create separate endpoint
-      if (schedules.length > 0) {
-        for (const schedule of schedules) {
-          const updatedAt = new Date(schedule.updatedAt);
-          const currentDate = new Date();
-          const differenceInDays: number =
-            (currentDate.getTime() - updatedAt.getTime()) /
-            (1000 * 60 * 60 * 24);
-          if (differenceInDays > 7) {
-            const sql = `
+      res.json(schedules);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// Clear Old log by resetting taken to false
+app.put(
+  '/api/schedule/:day/:patientId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { scheduleId } = req.body;
+      if (!scheduleId) throw new ClientError(400, 'scheduleId required');
+      if (!Number.isInteger(+scheduleId))
+        throw new ClientError(400, 'Valid scheduleId (integer) required');
+      const sql = `
             update "medicationLogs"
               set "taken" = false
               where "scheduleId = $1
               returning *;
           `;
-            await db.query<Log>(sql, [schedule.scheduleId]);
-            const sql2 = `
+      await db.query<Log>(sql, [scheduleId]);
+      const sql2 = `
             update "medicationSchedules"
               set "updatedAt" = NOW()
               where "scheduleId" = $1
               returning *;
           `;
-            await db.query<ScheduleOutput>(sql2, [schedule.scheduleId]);
-          }
-        }
-      }
-      res.json(schedules);
+      await db.query<ScheduleOutput>(sql2, [scheduleId]);
     } catch (err) {
       next(err);
     }
@@ -558,6 +562,7 @@ app.put(
   }
 );
 
+// Send a text to the user if a medication runs out
 app.post(
   '/api/medications/:id/notify-depletion',
   authMiddleware,
@@ -593,13 +598,12 @@ app.post(
   }
 );
 
+// Update the log when a user logs a medication
 app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
   try {
     const { scheduleId } = req.params;
     const { operation } = req.body;
     let taken;
-
-    // Todo: switch to ternary
     switch (operation) {
       case 'decrement':
         taken = true;
@@ -623,6 +627,7 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Gets the requests for the user
 app.get('/api/requests', authMiddleware, async (req, res, next) => {
   try {
     const sql = `
@@ -650,6 +655,7 @@ app.get('/api/requests', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Creates a new access request
 app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
   try {
     const { username } = req.body;
@@ -681,6 +687,7 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Accept an access request
 app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
   try {
     const { requesterId } = req.body;
@@ -706,11 +713,10 @@ app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Deny an access request
 app.delete('/api/requests/respond', authMiddleware, async (req, res, next) => {
   try {
     const { requesterId } = req.body;
-    console.log('requesterId', requesterId);
-    console.log('currentUserId', req.user?.userId);
     if (!requesterId) throw new ClientError(400, 'requesterId required');
     const deleteRequestSql = `
       delete from "accessRequests"
@@ -728,6 +734,7 @@ app.delete('/api/requests/respond', authMiddleware, async (req, res, next) => {
   }
 });
 
+// Get the notification setting for a user
 app.get(
   '/api/notifications-setting',
   authMiddleware,
@@ -747,6 +754,7 @@ app.get(
   }
 );
 
+// Update the notification setting for the user
 app.put(
   '/api/notifications-setting',
   authMiddleware,

@@ -317,6 +317,31 @@ export async function fetchSchedules(day: number, selectedPatientId: number) {
 }
 
 /**
+ * Resets the taken attribute of a medicationLog to false
+ * @param day - index of the days array
+ * @param selectedPatientId -
+ * @param scheduleId
+ */
+export async function resetLog(
+  day: number,
+  selectedPatientId: number,
+  scheduleId: number
+) {
+  const token = readToken();
+  const response = await fetch(
+    `/api/schedule/${days[day]}/${selectedPatientId}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ scheduleId }),
+    }
+  );
+  if (!response.ok) throw new Error(`Response status: ${response.status}`);
+}
+
+/**
  * Updates the remaining count for the given medicationId in the database
  * @param medicationId
  * @param operation - Increment or Decrement

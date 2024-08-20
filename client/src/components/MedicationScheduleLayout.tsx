@@ -1,5 +1,6 @@
 import { AddScheduleForm } from '@/components/AddScheduleForm';
 import {
+  resetLog,
   fetchSchedules,
   Medication,
   ScheduleLog,
@@ -46,6 +47,7 @@ export function MedicationScheduleLayout({
     async (day: number, selectedPatientId: number) => {
       try {
         const schedules = await fetchSchedules(day, selectedPatientId);
+        await checkForOldLogs(schedules, day, selectedPatientId);
         setDailySchedules(schedules);
       } catch (error) {
         toast({ title: String(error), variant: 'destructive' });
@@ -53,6 +55,28 @@ export function MedicationScheduleLayout({
     },
     [toast]
   );
+
+  /**
+   * Checks for any Logs older than a week and resets them
+   * @param schedules - List of schedule logs for the current selected day
+   * @param dayNum - index of the days array
+   * @param selectedPatientId
+   */
+  async function checkForOldLogs(
+    schedules: ScheduleLog[],
+    dayNum: number,
+    selectedPatientId: number
+  ) {
+    for (const schedule of schedules) {
+      const updatedAt = new Date(schedule.updatedAt);
+      const currentDate = new Date();
+      const differenceInDays: number =
+        (currentDate.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+      if (differenceInDays > 7) {
+        await resetLog(dayNum, selectedPatientId, schedule.scheduleId);
+      }
+    }
+  }
 
   useEffect(() => {
     // Don't fetch the schedules if there is no patient selected
