@@ -54,6 +54,7 @@
         <li><a href="#purpose">Purpose</a></li>
         <li><a href="#stack">Stack</a></li>
         <li><a href="#packages">Packages</a></li>
+        <li><a href="#features">Features</a></li>
         <li><a href="#challenges">Challenges Faced</a></li>
       </ul>
     </li>
@@ -63,8 +64,6 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
@@ -101,6 +100,22 @@ https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 * React-hook-form
 * zod - validation
 * twilio
+
+<!-- ROADMAP -->
+## Features
+
+- Users can register for an account and sign in
+- Users can add medications to their list
+- Users can view their medicaitons List
+- Users can schedule medications
+- Caregivers can request access to patient accounts
+- Users can download a pdf of their medication List
+- Users can sign up for text message notifications when a medication runs out
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 
 ### Challenges Faced
 <p>Developing MediTrak in just three weeks posed numerous challenges, from planning and designing to building and deploying. I hoped to streamline this process by using the Shadcn ui library, but this decision brought its own hurdles. While Shadcn allows for easy copy-pasting of components into the codebase, modifying their functionality to fit my use cases proved difficult, requiring frequent referral to the Shadcn and Radix documentation.</p>
@@ -147,20 +162,6 @@ To get a local copy up and running follow these simple example steps.
 
 
 
-
-<!-- ROADMAP -->
-## Features
-
-- Users can register for an account and sign in
-- Users can add medications to their list
-- Users can view their medicaitons List
-- Users can schedule medications
-- Caregivers can request access to patient accounts
-- Users can download a pdf of their medication List
-- Users can sign up for text message notifications when a medication runs out
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
