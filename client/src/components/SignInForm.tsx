@@ -41,74 +41,76 @@ export function SignInForm() {
 
   return (
     <>
-      <section className="container h-screen flex items-center pt-[110px]">
-        <Card className="w-full max-w-sm mx-auto">
-          <form onSubmit={(e) => handleSubmit(e)}>
-            <CardHeader>
-              <CardTitle className="text-2xl text-redblack">Login</CardTitle>
-              <CardDescription>
-                Enter your username and password below to login to your account
-                or choose a guest account.
-              </CardDescription>
-              <div className="flex justify-between">
-                <Button
-                  onClick={() => {
-                    setUserName('patient');
-                    setPassword('password');
-                  }}>
-                  Guest - Patient
-                </Button>
-                <Button
-                  onClick={() => {
-                    setUserName('caregiver');
-                    setPassword('password');
-                  }}>
-                  Guest - Caregiver
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="w-4 h-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    Your username or password is incorrect.
-                  </AlertDescription>
-                </Alert>
-              )}
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="username"
-                  required
-                  value={username}
-                  onChange={(e) => setUserName(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-2">
-              <Button className="w-full bg-redblack">Sign in</Button>
-              <div>
-                Don't have an account yet?{' '}
-                <Link to="/sign-up" className="font-bold text-ruby">
-                  Sign Up
-                </Link>
-              </div>
-            </CardFooter>
-          </form>
-        </Card>
+      <section className="container h-screen flex justify-center items-center pt-[110px]">
+        <div>
+          <div className="flex justify-between mb-4">
+            <Button
+              onClick={() => {
+                setUserName('patient');
+                setPassword('password');
+              }}>
+              Guest - Patient
+            </Button>
+            <Button
+              onClick={() => {
+                setUserName('caregiver');
+                setPassword('password');
+              }}>
+              Guest - Caregiver
+            </Button>
+          </div>
+          <Card className="w-full max-w-sm mx-auto">
+            <form onSubmit={(e) => handleSubmit(e)}>
+              <CardHeader>
+                <CardTitle className="text-2xl text-redblack">Login</CardTitle>
+                <CardDescription>
+                  Enter your username and password below to login to your
+                  account or choose a guest account.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="w-4 h-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                      Your username or password is incorrect.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <div className="grid gap-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="username"
+                    required
+                    value={username}
+                    onChange={(e) => setUserName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col gap-2">
+                <Button className="w-full bg-redblack">Sign in</Button>
+                <div>
+                  Don't have an account yet?{' '}
+                  <Link to="/sign-up" className="font-bold text-ruby">
+                    Sign Up
+                  </Link>
+                </div>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
       </section>
     </>
   );

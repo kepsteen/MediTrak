@@ -468,6 +468,7 @@ app.get(
     `;
       const result = await db.query<ScheduleOutput>(sql, [patientId, day]);
       const schedules = result.rows;
+      // Todo: Create separate endpoint
       if (schedules.length > 0) {
         for (const schedule of schedules) {
           const updatedAt = new Date(schedule.updatedAt);
@@ -597,6 +598,8 @@ app.put('/api/log/:scheduleId', authMiddleware, async (req, res, next) => {
     const { scheduleId } = req.params;
     const { operation } = req.body;
     let taken;
+
+    // Todo: switch to ternary
     switch (operation) {
       case 'decrement':
         taken = true;
@@ -680,7 +683,7 @@ app.post('/api/requests/add', authMiddleware, async (req, res, next) => {
 
 app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
   try {
-    const { requesterId, isAccepted } = req.body;
+    const { requesterId } = req.body;
     if (!requesterId) throw new ClientError(400, 'requesterId is required');
     if (!Number.isInteger(+requesterId))
       throw new ClientError(400, 'Valid requesterId (integer) is required');
@@ -697,21 +700,29 @@ app.put('/api/requests/respond', authMiddleware, async (req, res, next) => {
     const [request] = result.rows;
     if (!request) throw new ClientError(404, 'Connection Request Not found');
 
-    if (!isAccepted) {
-      const deleteRequestSql = `
+    res.status(200).json(request);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/requests/respond', authMiddleware, async (req, res, next) => {
+  try {
+    const { requesterId } = req.body;
+    console.log('requesterId', requesterId);
+    console.log('currentUserId', req.user?.userId);
+    if (!requesterId) throw new ClientError(400, 'requesterId required');
+    const deleteRequestSql = `
       delete from "accessRequests"
         where "requesterId" = $1 and "requestedId" = $2
         returning *;
     `;
-      const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
-        requesterId,
-        req.user?.userId,
-      ]);
-      const [accessRequest] = resultDeleteRequest.rows;
-      if (!accessRequest) throw new ClientError(404, 'Request not found');
-    }
-
-    res.status(200).json(request);
+    const resultDeleteRequest = await db.query<Requests>(deleteRequestSql, [
+      requesterId,
+      req.user?.userId,
+    ]);
+    const [accessRequest] = resultDeleteRequest.rows;
+    if (!accessRequest) throw new ClientError(404, 'Request not found');
   } catch (err) {
     next(err);
   }

@@ -116,6 +116,111 @@ const days = [
   'Saturday',
 ];
 
+export const medNames = [
+  'Acetaminophen',
+  'Ibuprofen',
+  'Aspirin',
+  'Amoxicillin',
+  'Metformin',
+  'Lisinopril',
+  'Amlodipine',
+  'Atorvastatin',
+  'Omeprazole',
+  'Levothyroxine',
+  'Metoprolol',
+  'Simvastatin',
+  'Losartan',
+  'Gabapentin',
+  'Hydrochlorothiazide',
+  'Furosemide',
+  'Azithromycin',
+  'Pantoprazole',
+  'Prednisone',
+  'Tamsulosin',
+  'Clopidogrel',
+  'Sertraline',
+  'Montelukast',
+  'Alprazolam',
+  'Warfarin',
+  'Doxycycline',
+  'Meloxicam',
+  'Venlafaxine',
+  'Tramadol',
+  'Citalopram',
+  'Lorazepam',
+  'Fluoxetine',
+  'Sulfamethoxazole/Trimethoprim',
+  'Carvedilol',
+  'Ranitidine',
+  'Loratadine',
+  'Spironolactone',
+  'Cetirizine',
+  'Atenolol',
+  'Risperidone',
+  'Trazodone',
+  'Escitalopram',
+  'Cyclobenzaprine',
+  'Aspirin/Butalbital/Caffeine',
+  'Methylprednisolone',
+  'Paroxetine',
+  'Amiodarone',
+  'Clonazepam',
+  'Naproxen',
+  'Diclofenac',
+  'Propranolol',
+  'Quetiapine',
+  'Allopurinol',
+  'Cefalexin',
+  'Glipizide',
+  'Famotidine',
+  'Morphine',
+  'Fentanyl',
+  'Phenytoin',
+  'Methotrexate',
+  'Buspirone',
+  'Insulin Glargine',
+  'Hydrocodone/Acetaminophen',
+  'Lamotrigine',
+  'Sitagliptin',
+  'Varenicline',
+  'Baclofen',
+  'Oxycodone',
+  'Duloxetine',
+  'Olanzapine',
+  'Diazepam',
+  'Levofloxacin',
+  'Lidocaine',
+  'Methocarbamol',
+  'Nifedipine',
+  'Valacyclovir',
+  'Enalapril',
+  'Divalproex',
+  'Mirtazapine',
+  'Topiramate',
+  'Nitroglycerin',
+  'Fluticasone',
+  'Albuterol',
+  'Rosuvastatin',
+  'Glyburide',
+  'Aripiprazole',
+  'Bupropion',
+  'Erythromycin',
+  'Labetalol',
+  'Promethazine',
+  'Hydroxyzine',
+  'Tizanidine',
+  'Zolpidem',
+  'Clindamycin',
+  'Esomeprazole',
+  'Metronidazole',
+  'Mupirocin',
+  'Ondansetron',
+  'Ciprofloxacin',
+  'Nitrofurantoin',
+  'Ketoconazole',
+  'Verapamil',
+];
+
 export function saveAuth(user: User, token: string): void {
   const auth: Auth = { user, token };
   localStorage.setItem(authKey, JSON.stringify(auth));
@@ -274,14 +379,10 @@ export async function fetchConnectedUsers() {
 
 /**
  * Updates the request status to accepted or deletes the request if it is denied
- * @param isAccepted - true if user accepts the request
  * @param requesterId - id of the user who sent the request
  * @throws error if response is not ok
  */
-export async function updateRequestStatus(
-  isAccepted: boolean,
-  requesterId: number
-) {
+export async function acceptRequest(requesterId: number) {
   const token = readToken();
   const response = await fetch('/api/requests/respond', {
     method: 'PUT',
@@ -289,7 +390,24 @@ export async function updateRequestStatus(
       'Content-type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ isAccepted, requesterId }),
+    body: JSON.stringify({ requesterId }),
+  });
+  if (!response.ok) throw new Error(`Response status: ${response.status}`);
+}
+
+/**
+ * Deletes the access request
+ * @param requesterId - Id of the user who sent the request
+ */
+export async function deleteRequest(requesterId: number) {
+  const token = readToken();
+  const response = await fetch('/api/requests/respond', {
+    method: 'DELETE',
+    headers: {
+      'Content-type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ requesterId }),
   });
   if (!response.ok) throw new Error(`Response status: ${response.status}`);
 }
