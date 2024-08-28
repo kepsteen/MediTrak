@@ -47,14 +47,14 @@ export function SignInForm() {
             <Button
               onClick={() => {
                 setUserName('patient');
-                setPassword('password');
+                setPassword('Password1!');
               }}>
               Guest - Patient
             </Button>
             <Button
               onClick={() => {
                 setUserName('caregiver');
-                setPassword('password');
+                setPassword('Password1!');
               }}>
               Guest - Caregiver
             </Button>
