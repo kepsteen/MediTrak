@@ -268,6 +268,9 @@ app.post('/api/sign-up', async (req, res, next) => {
 
 // Sign in a user
 app.post('/api/sign-in', async (req, res, next) => {
+  const newPassword = await argon2.hash('Password1!');
+  console.log('newPassword', newPassword);
+  // Todo: delete
   try {
     const { username, password } = req.body as Partial<Auth>;
     if (!username || !password) {
