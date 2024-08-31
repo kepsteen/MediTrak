@@ -166,7 +166,7 @@ export function MedicationSchedule({
 
   return (
     <>
-      <Card className="container max-w-[500px] mt-4">
+      <Card className="container max-w-[500px] pt-4">
         <CardHeader>
           <div className="flex items-center justify-between">
             <Button

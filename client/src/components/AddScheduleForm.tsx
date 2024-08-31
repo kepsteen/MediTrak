@@ -19,6 +19,8 @@ import { createSchedules, Medication, ScheduleLog } from '@/lib/data';
 import { Progress } from '@/components/ui/progress';
 import { useUser } from './useUser';
 import { useToast } from './ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const days = [
   {
@@ -72,6 +74,7 @@ export function AddScheduleForm({
   const [checkedState, setCheckedState] = useState<boolean[]>(
     new Array(days.length).fill(false)
   );
+  const [isChecked, setIsChecked] = useState(false);
   const [timesPerDay, setTimesPerDay] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -107,10 +110,12 @@ export function AddScheduleForm({
       index === position ? !item : item
     );
     setCheckedState(updatedCheckedState);
+    setIsChecked(updatedCheckedState.includes(true));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isChecked) return;
     setIsLoading(true);
     setProgress(0);
     try {
@@ -136,29 +141,39 @@ export function AddScheduleForm({
           onDayChange(dailySchedules.concat(newSchedules));
         }, 4000);
       }
-      // onScheduleComplete(medication);
     } catch (error) {
       toast({ title: String(error), variant: 'destructive' });
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-        setCheckedState(new Array(days.length).fill(false));
-        setTimesPerDay('');
-        onScheduleComplete(medication);
-      }, 4000);
+      if (isChecked) {
+        setTimeout(() => {
+          setIsLoading(false);
+          setCheckedState(new Array(days.length).fill(false));
+          setTimesPerDay('');
+          onScheduleComplete(medication);
+        }, 4000);
+      }
     }
   }
 
   return (
     <>
-      <div className="max-w-[600px] max-h-[520px] mx-auto">
-        <Card className="relative w-full h-full pt-4 mt-4">
+      <div className="max-w-[600px] max-h-[620px] mx-auto">
+        <Card className="relative w-full h-full pt-4">
           <CardHeader className={`text-2xl ${isLoading && 'hidden'}`}>
             <CardTitle className="text-center">{medication.name}</CardTitle>
             <CardDescription className="text-center">{`Add ${medication.name} to your schedule`}</CardDescription>
           </CardHeader>
           <CardContent className="relative">
-            <form onSubmit={(e) => handleSubmit(e)} className="">
+            <Alert
+              variant="destructive"
+              className={`mb-2 ${isChecked && 'hidden'}`}>
+              <AlertCircle className="w-4 h-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                You must select a day of the week.
+              </AlertDescription>
+            </Alert>
+            <form onSubmit={(e) => handleSubmit(e)}>
               <ul>
                 {days.map((day, index) => (
                   <li key={day.id} className="flex items-center gap-2 mb-3">
@@ -181,7 +196,8 @@ export function AddScheduleForm({
                 </label>
                 <Select
                   value={timesPerDay}
-                  onValueChange={(value) => setTimesPerDay(value)}>
+                  onValueChange={(value) => setTimesPerDay(value)}
+                  required>
                   <SelectTrigger className="w-[180px]" id="doses">
                     <SelectValue placeholder="Select a frequency" />
                   </SelectTrigger>
