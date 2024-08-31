@@ -120,7 +120,7 @@ export function RegistrationForm() {
       toast({ title: `Successfully created account ${values.username}` });
       navigate('/sign-in');
     } catch (error) {
-      // Set error due to error if error is type unknown
+      // Set error to String to avoid TS error if type is unknown
       setError(String(error));
     }
   }
