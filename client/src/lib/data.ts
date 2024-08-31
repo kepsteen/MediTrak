@@ -116,6 +116,7 @@ const days = [
   'Saturday',
 ];
 
+// Med Names for placeholder in addMedForm.tsx
 export const medNames = [
   'Acetaminophen',
   'Ibuprofen',
@@ -221,21 +222,36 @@ export const medNames = [
   'Verapamil',
 ];
 
+/**
+ * Saves the authKey to local storage.
+ * @param user - User object
+ * @param token - jwt token
+ */
 export function saveAuth(user: User, token: string): void {
   const auth: Auth = { user, token };
   localStorage.setItem(authKey, JSON.stringify(auth));
 }
 
+/**
+ * Removes the authKey from localStorage
+ */
 export function removeAuth(): void {
   localStorage.removeItem(authKey);
 }
 
+/**
+ * Reads the User from local storage if it exists.
+ * @returns the User if it exists or undefined.
+ */
 export function readUser(): User | undefined {
   const auth = localStorage.getItem(authKey);
   if (!auth) return undefined;
   return (JSON.parse(auth) as Auth).user;
 }
-
+/**
+ * Reads the jwt token from local storage if it exists.
+ * @returns the token if it exists or undefined.
+ */
 export function readToken(): string | undefined {
   const auth = localStorage.getItem(authKey);
   if (!auth) return undefined;
@@ -563,6 +579,10 @@ export async function notifyMedicationDepletion(medicationId: number) {
   if (!response.ok) throw new Error(`Response status: ${response.status}`);
 }
 
+/**
+ * Fetches the notifications setting of the user.
+ * @returns - the status of the setting
+ */
 export async function fetchNotificationSetting() {
   const token = readToken();
   const response = await fetch(`/api/notifications-setting`, {
@@ -577,6 +597,10 @@ export async function fetchNotificationSetting() {
   return notificationSetting;
 }
 
+/**
+ * Updates the notifications setting of the user.
+ * @returns - the updated status of the setting.
+ */
 export async function updateNotificationSetting() {
   const token = readToken();
   const response = await fetch(`/api/notifications-setting`, {

@@ -15,7 +15,7 @@ export type UserContextValues = {
   handleSignOut: () => void;
 };
 
-// Creates a React conte
+// Creates a React context with default values
 export const UserContext = createContext<UserContextValues>({
   user: undefined,
   token: undefined,
@@ -41,12 +41,20 @@ export function UserProvider({ children }: Props) {
     fetchUserAndToken();
   }, []);
 
+  /**
+   * Updates the user and token state and saves to local storage.
+   * @param user - User object
+   * @param token - jwt token
+   */
   function handleSignIn(user: User, token: string) {
     setUser(user);
     setToken(token);
     saveAuth(user, token);
   }
 
+  /**
+   * Clears the user and token state and removes them from local storage.
+   */
   function handleSignOut() {
     setUser(undefined);
     setToken(undefined);
