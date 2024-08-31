@@ -14,6 +14,8 @@ export type UserContextValues = {
   handleSignIn: (user: User, token: string) => void;
   handleSignOut: () => void;
 };
+
+// Creates a React conte
 export const UserContext = createContext<UserContextValues>({
   user: undefined,
   token: undefined,
