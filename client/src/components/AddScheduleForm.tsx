@@ -75,6 +75,7 @@ export function AddScheduleForm({
     new Array(days.length).fill(false)
   );
   const [isChecked, setIsChecked] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
   const [timesPerDay, setTimesPerDay] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -115,7 +116,7 @@ export function AddScheduleForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isChecked) return;
+    if (!isChecked || !isSelected) return;
     setIsLoading(true);
     setProgress(0);
     try {
@@ -144,7 +145,7 @@ export function AddScheduleForm({
     } catch (error) {
       toast({ title: String(error), variant: 'destructive' });
     } finally {
-      if (isChecked) {
+      if (isChecked && isSelected) {
         setTimeout(() => {
           setIsLoading(false);
           setCheckedState(new Array(days.length).fill(false));
@@ -166,11 +167,11 @@ export function AddScheduleForm({
           <CardContent className="relative">
             <Alert
               variant="destructive"
-              className={`mb-2 ${isChecked && 'hidden'}`}>
+              className={`mb-2 ${isChecked && isSelected && 'hidden'}`}>
               <AlertCircle className="w-4 h-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>
-                You must select a day of the week.
+                You must select a day of the week and a frequency.
               </AlertDescription>
             </Alert>
             <form onSubmit={(e) => handleSubmit(e)}>
@@ -196,7 +197,10 @@ export function AddScheduleForm({
                 </label>
                 <Select
                   value={timesPerDay}
-                  onValueChange={(value) => setTimesPerDay(value)}
+                  onValueChange={(value) => {
+                    setTimesPerDay(value);
+                    setIsSelected(true);
+                  }}
                   required>
                   <SelectTrigger className="w-[180px]" id="doses">
                     <SelectValue placeholder="Select a frequency" />
