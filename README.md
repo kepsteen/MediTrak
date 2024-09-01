@@ -34,7 +34,7 @@
   <p align="center">
     An accessible Full-Stack web application for patients and Caregivers to more easily manage their medications
     <br />
-    <a href="http://ec2-54-193-74-245.us-west-1.compute.amazonaws.com">View Demo</a>
+    <a href="http://meditrak.codyepstein.com">View Demo</a>
     ·
     <a href="https://github.com/kepsteen/MediTrak/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
