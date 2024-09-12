@@ -84,15 +84,19 @@ export function AddMedForm({ patientId }: Props) {
   const randomMed = medNames[randomIndex];
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const newMedication = { ...values, scheduled: false, userId: patientId };
-    for (const key in newMedication) {
-      if (newMedication[key] === '') newMedication[key] = null;
+    try {
+      const newMedication = { ...values, scheduled: false, userId: patientId };
+      for (const key in newMedication) {
+        if (newMedication[key] === '') newMedication[key] = null;
+      }
+      await addMedication(newMedication);
+      navigate('/medications');
+      toast({
+        title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
+      });
+    } catch (error) {
+      toast({ title: String(error), variant: 'destructive' });
     }
-    await addMedication(newMedication);
-    navigate('/medications');
-    toast({
-      title: `${newMedication.name} ${newMedication.dosage} ${newMedication.form} added`,
-    });
   }
   return (
     <>

@@ -2,6 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { ClientError } from './client-error.js';
+import { ZodError } from 'zod';
 
 export function errorMiddleware(
   err: unknown,
@@ -13,6 +14,8 @@ export function errorMiddleware(
     res.status(err.status).json({ error: err.message });
   } else if (err instanceof jwt.JsonWebTokenError) {
     res.status(401).json({ error: 'invalid access token' });
+  } else if (err instanceof ZodError) {
+    res.status(400).json({ error: 'invalid schema' });
   } else {
     console.error(err);
     res.status(500).json({

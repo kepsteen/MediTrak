@@ -6,6 +6,12 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 import twilio from 'twilio';
+import { validationMiddleware } from './lib/validation-middleware.js';
+import {
+  medicationSchema,
+  scheduleInputSchema,
+  userSchema,
+} from './lib/schemas.js';
 
 type Medication = {
   medicationId: number;
@@ -106,81 +112,6 @@ type MedicationUser = {
   notificationsEnabled: boolean;
 };
 
-/**
- * Validates the data sent in the body of the request for a Medication type
- * @param reqBody - request body
- * @throws error if any of the fields are missing or are the incorrect type
- */
-function validateMedication(reqBody: unknown): void {
-  const { name, dosage, form, notes, prescriber, amount, remaining, userId } =
-    reqBody as Medication;
-
-  if (name === undefined) throw new ClientError(400, 'no name provided');
-  if (dosage === undefined) throw new ClientError(400, 'no dosage provided');
-  if (form === undefined) throw new ClientError(400, 'no form provided');
-  if (notes === undefined) throw new ClientError(400, 'no notes provided');
-  if (prescriber === undefined)
-    throw new ClientError(400, 'no prescriber provided');
-  if (amount === undefined) throw new ClientError(400, 'no amount provided');
-  if (remaining === undefined)
-    throw new ClientError(400, 'no remaining provided');
-  if (userId === undefined) throw new ClientError(400, 'no userId provided');
-  if (!Number.isInteger(+amount) && amount !== null) {
-    throw new ClientError(400, `amount ${amount} is not a number`);
-  }
-  if (!Number.isInteger(+remaining) && remaining !== null) {
-    throw new ClientError(400, `amount ${remaining} is not a number`);
-  }
-}
-
-/**
- * Validates the data in the body of the request for a Schedule type
- * @param reqBody  - request body
- * @throws error if any of the fields are missing or are the incorrect type
- */
-function validateSchedule(reqBody: unknown): void {
-  const { medicationId, timesPerDay, daysOfWeek, userId, name, dosage, form } =
-    reqBody as ScheduleInput;
-  if (!Number.isInteger(+medicationId)) {
-    throw new ClientError(400, 'Valid medicationId (integer) is required');
-  }
-  if (!Number.isInteger(+timesPerDay)) {
-    throw new ClientError(400, 'Valid timesPerDay (integer) is required');
-  }
-  if (
-    !Array.isArray(daysOfWeek) ||
-    !daysOfWeek.every((day) => typeof day === 'string')
-  ) {
-    throw new ClientError(400, 'daysOfWeek must be an array of strings');
-  }
-  if (!Number.isInteger(userId)) {
-    throw new ClientError(400, 'Valid userId (integer) is required');
-  }
-  if (!name) throw new ClientError(400, 'Valid name required');
-  if (!dosage) throw new ClientError(400, 'Valid dosage required');
-  if (!form) throw new ClientError(400, 'Valid form required');
-}
-
-/**
- * Validates the data in the body of the request for a User type
- * @param reqBody - request body
- * @throws error if any of the fields are missing or are the incorrect type
- */
-function validateUser(reqBody: unknown): void {
-  const { username, password, role, dob, phoneNumber, notificationsEnabled } =
-    reqBody as User;
-  if (!username) {
-    throw new ClientError(400, 'username is required');
-  }
-  if (!password) throw new ClientError(400, 'Password is required');
-  if (!role) throw new ClientError(400, 'Role is required');
-  if (!dob) throw new ClientError(400, 'Date of Birth is required');
-  if (phoneNumber === undefined)
-    throw new ClientError(400, 'Phone number is required');
-  if (notificationsEnabled === undefined || notificationsEnabled === null)
-    throw new ClientError(400, 'NotificationsEnabled required');
-}
-
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
@@ -223,48 +154,51 @@ app.use(express.static(uploadsStaticDir));
 app.use(express.json());
 
 // Register a new User
-app.post('/api/sign-up', async (req, res, next) => {
-  try {
-    const {
-      fullName,
-      username,
-      password,
-      dob,
-      role,
-      phoneNumber,
-      notificationsEnabled,
-    } = req.body;
-    validateUser(req.body);
-    const checkUsernameSql = `
+app.post(
+  '/api/sign-up',
+  validationMiddleware(userSchema),
+  async (req, res, next) => {
+    try {
+      const {
+        fullName,
+        username,
+        password,
+        dob,
+        role,
+        phoneNumber,
+        notificationsEnabled,
+      } = req.body;
+      const checkUsernameSql = `
       select *
         from "users"
         where "username" = $1;
     `;
-    const userCheck = await db.query<User>(checkUsernameSql, [username]);
-    if (userCheck.rows.length > 0) {
-      throw new ClientError(409, `Username ${username} already exists.`);
-    }
-    const hashedPassword = await argon2.hash(password);
-    const sql = `
+      const userCheck = await db.query<User>(checkUsernameSql, [username]);
+      if (userCheck.rows.length > 0) {
+        throw new ClientError(409, `Username ${username} already exists.`);
+      }
+      const hashedPassword = await argon2.hash(password);
+      const sql = `
       insert into "users" ("fullName" ,"username", "hashedPassword", "role", "dateOfBirth", "phoneNumber", "notificationsEnabled")
         values ($1, $2, $3, $4, $5, $6, $7)
         returning "userId", "username", "createdAt";
     `;
-    const result = await db.query<User>(sql, [
-      fullName,
-      username,
-      hashedPassword,
-      role,
-      dob,
-      phoneNumber,
-      notificationsEnabled,
-    ]);
-    const [user] = result.rows;
-    res.status(201).json(user);
-  } catch (err) {
-    next(err);
+      const result = await db.query<User>(sql, [
+        fullName,
+        username,
+        hashedPassword,
+        role,
+        dob,
+        phoneNumber,
+        notificationsEnabled,
+      ]);
+      const [user] = result.rows;
+      res.status(201).json(user);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // Sign in a user
 app.post('/api/sign-in', async (req, res, next) => {
@@ -301,106 +235,118 @@ app.post('/api/sign-in', async (req, res, next) => {
 });
 
 // Add new medication to the Database
-app.post('/api/medications', authMiddleware, async (req, res, next) => {
-  try {
-    validateMedication(req.body);
-    const {
-      name,
-      dosage,
-      form,
-      notes,
-      prescriber,
-      amount,
-      remaining,
-      scheduled,
-      userId,
-    } = req.body;
-    const sql = `
+app.post(
+  '/api/medications',
+  authMiddleware,
+  validationMiddleware(medicationSchema),
+  async (req, res, next) => {
+    try {
+      const {
+        name,
+        dosage,
+        form,
+        notes,
+        prescriber,
+        amount,
+        remaining,
+        scheduled,
+        userId,
+      } = req.body;
+      const sql = `
       insert into "medications" ("rxcui","name","dosage","form","notes","prescriber","amount","remaining","scheduled","userId" )
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         returning *;
     `;
-    const params = [
-      1,
-      name,
-      dosage,
-      form,
-      notes,
-      prescriber,
-      amount,
-      remaining,
-      scheduled,
-      userId,
-    ];
-    const result = await db.query<Medication>(sql, params);
-    const [medication] = result.rows;
-    res.status(201).json(medication);
-  } catch (err) {
-    next(err);
+      const params = [
+        1,
+        name,
+        dosage,
+        form,
+        notes,
+        prescriber,
+        amount,
+        remaining,
+        scheduled,
+        userId,
+      ];
+      const result = await db.query<Medication>(sql, params);
+      const [medication] = result.rows;
+      res.status(201).json(medication);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // Get the medications of a user
-app.get('/api/medications/:userId', authMiddleware, async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-    if (!userId) throw new ClientError(400, 'UserId required');
-    const sql = `
+app.get(
+  '/api/medications/:patientId',
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      const { patientId } = req.params;
+      if (!patientId) throw new ClientError(400, 'UserId required');
+      const sql = `
       select *
         from "medications"
         where "userId" = $1;
     `;
-    const result = await db.query<Medication>(sql, [userId]);
-    const medications = result.rows;
-    res.json(medications);
-  } catch (err) {
-    next(err);
+      const result = await db.query<Medication>(sql, [patientId]);
+      const medications = result.rows;
+      res.json(medications);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // Schedule a medication
-app.post('/api/schedule', authMiddleware, async (req, res, next) => {
-  try {
-    validateSchedule(req.body);
-    const {
-      medicationId,
-      timesPerDay,
-      daysOfWeek,
-      userId,
-      name,
-      dosage,
-      form,
-      currentDay,
-    } = req.body;
+app.post(
+  '/api/schedule',
+  authMiddleware,
+  validationMiddleware(scheduleInputSchema),
+  async (req, res, next) => {
+    try {
+      // validateSchedule(req.body);
+      const {
+        medicationId,
+        timesPerDay,
+        daysOfWeek,
+        userId,
+        name,
+        dosage,
+        form,
+        currentDay,
+      } = req.body;
 
-    const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
+      const timeOptions = ['Morning', 'Noon', 'Evening', 'Bed time'];
 
-    const scheduleValues = [];
-    const logValues = [];
+      const scheduleValues = [];
+      const logValues = [];
 
-    // Prepares the schedule data to be inserted into the database from the template.
-    // The nested loops creates an array of schedule values arrays that has a length of daysOfWeek * timesPerDay.
+      // Prepares the schedule data to be inserted into the database from the template.
+      // The nested loops creates an array of schedule values arrays that has a length of daysOfWeek * timesPerDay.
 
-    for (const dayOfWeek of daysOfWeek) {
-      for (let i = 0; i < timesPerDay; i++) {
-        const timeOfDay = timeOptions[i];
-        scheduleValues.push([
-          medicationId,
-          timeOfDay,
-          dayOfWeek,
-          userId,
-          name,
-          dosage,
-          form,
-        ]);
+      for (const dayOfWeek of daysOfWeek) {
+        for (let i = 0; i < timesPerDay; i++) {
+          const timeOfDay = timeOptions[i];
+          scheduleValues.push([
+            medicationId,
+            timeOfDay,
+            dayOfWeek,
+            userId,
+            name,
+            dosage,
+            form,
+          ]);
+        }
       }
-    }
-    // This approach avoids having to create a query for each subarray of scheduleValues.
-    // scheduleValues is mapped over to insert one row in the database for each subarray of scheduleValues.
-    // The index is used to increment the parameterized placeholders according to the number of values inserted into each row (7 in this case)
-    // e.g. values ($1, $2, $3, $4, $5, $6, $7),
-    //             ($8, $9, $10, $11, $12, $13, $14) ...
-    const scheduleSql = `
+      // This approach avoids having to create a query for each subarray of scheduleValues.
+      // scheduleValues is mapped over to insert one row in the database for each subarray of scheduleValues.
+      // The index is used to increment the parameterized placeholders according to the number of values inserted into each row (7 in this case)
+      // e.g. values ($1, $2, $3, $4, $5, $6, $7),
+      //             ($8, $9, $10, $11, $12, $13, $14) ...
+      const scheduleSql = `
       insert into "medicationSchedules" ("medicationId", "timeOfDay", "dayOfWeek", "userId", "name", "dosage", "form")
       values ${scheduleValues
         .map(
@@ -412,16 +358,16 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
         .join(', ')}
       returning *;
     `;
-    // The array is flattened so each item corresponds to the parameterized placeholder
-    const scheduleResult = await db.query<ScheduleOutput>(
-      scheduleSql,
-      scheduleValues.flat()
-    );
-    for (const schedule of scheduleResult.rows) {
-      logValues.push([medicationId, userId, schedule.scheduleId, false]);
-    }
-    // The created medication Schedules are used to create a log in the database that tracks if the patient has taken the medication
-    const logSql = `
+      // The array is flattened so each item corresponds to the parameterized placeholder
+      const scheduleResult = await db.query<ScheduleOutput>(
+        scheduleSql,
+        scheduleValues.flat()
+      );
+      for (const schedule of scheduleResult.rows) {
+        logValues.push([medicationId, userId, schedule.scheduleId, false]);
+      }
+      // The created medication Schedules are used to create a log in the database that tracks if the patient has taken the medication
+      const logSql = `
       insert into "medicationLogs" ("medicationId", "userId", "scheduleId", "taken")
       values ${logValues
         .map(
@@ -433,25 +379,26 @@ app.post('/api/schedule', authMiddleware, async (req, res, next) => {
         .join(', ')}
       returning *;
     `;
-    const logResult = await db.query(logSql, logValues.flat());
+      const logResult = await db.query(logSql, logValues.flat());
 
-    // After creating the rows in both tables the joinResult is returned in the response
-    const joinSql = `
+      // After creating the rows in both tables the joinResult is returned in the response
+      const joinSql = `
       select *
         from "medicationSchedules" AS "ms"
         join "medicationLogs" AS "ml" USING ("scheduleId")
         where "ms"."userId" = $1 and "ms"."dayOfWeek" = $2 and "ms"."medicationId" = $3;
     `;
-    const joinResult = await db.query(joinSql, [
-      userId,
-      currentDay,
-      medicationId,
-    ]);
-    res.status(201).json(joinResult.rows);
-  } catch (err) {
-    next(err);
+      const joinResult = await db.query(joinSql, [
+        userId,
+        currentDay,
+        medicationId,
+      ]);
+      res.status(201).json(joinResult.rows);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // Get the daily scheduled meds
 app.get(
