@@ -6,6 +6,8 @@ import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 import twilio from 'twilio';
+import { validationMiddleware } from './lib/validation-middleware.js';
+import { medicationSchema } from './lib/schemas.js';
 
 type Medication = {
   medicationId: number;
@@ -301,44 +303,49 @@ app.post('/api/sign-in', async (req, res, next) => {
 });
 
 // Add new medication to the Database
-app.post('/api/medications', authMiddleware, async (req, res, next) => {
-  try {
-    validateMedication(req.body);
-    const {
-      name,
-      dosage,
-      form,
-      notes,
-      prescriber,
-      amount,
-      remaining,
-      scheduled,
-      userId,
-    } = req.body;
-    const sql = `
+app.post(
+  '/api/medications',
+  authMiddleware,
+  validationMiddleware(medicationSchema),
+  async (req, res, next) => {
+    try {
+      // validateMedication(req.body);
+      const {
+        name,
+        dosage,
+        form,
+        notes,
+        prescriber,
+        amount,
+        remaining,
+        scheduled,
+        userId,
+      } = req.body;
+      const sql = `
       insert into "medications" ("rxcui","name","dosage","form","notes","prescriber","amount","remaining","scheduled","userId" )
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         returning *;
     `;
-    const params = [
-      1,
-      name,
-      dosage,
-      form,
-      notes,
-      prescriber,
-      amount,
-      remaining,
-      scheduled,
-      userId,
-    ];
-    const result = await db.query<Medication>(sql, params);
-    const [medication] = result.rows;
-    res.status(201).json(medication);
-  } catch (err) {
-    next(err);
+      const params = [
+        1,
+        name,
+        dosage,
+        form,
+        notes,
+        prescriber,
+        amount,
+        remaining,
+        scheduled,
+        userId,
+      ];
+      const result = await db.query<Medication>(sql, params);
+      const [medication] = result.rows;
+      res.status(201).json(medication);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // Get the medications of a user
 app.get('/api/medications/:userId', authMiddleware, async (req, res, next) => {
