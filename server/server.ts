@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars -- Remove when used */
 import 'dotenv/config';
 import express from 'express';
-import pg, { Client } from 'pg';
+import pg from 'pg';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import { ClientError, errorMiddleware, authMiddleware } from './lib/index.js';
 import twilio from 'twilio';
 import { validationMiddleware } from './lib/validation-middleware.js';
 import {
-  medicationSchema,
+  addMedicationSchema,
+  getMedicationsSchema,
   scheduleInputSchema,
   userSchema,
 } from './lib/schemas.js';
+import { z } from 'zod';
 
 type Medication = {
   medicationId: number;
@@ -24,19 +26,6 @@ type Medication = {
   remaining: number;
   userId: number;
   createdAt: string;
-};
-
-type ScheduleInput = {
-  scheduleId: number;
-  medicationId: number;
-  timesPerDay: string;
-  daysOfWeek: string;
-  userId: number;
-  name: string;
-  dosage: string;
-  form: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 type ScheduleOutput = {
@@ -111,6 +100,9 @@ type MedicationUser = {
   phoneNumber: string;
   notificationsEnabled: boolean;
 };
+
+type GetMedicationsParams = z.infer<typeof getMedicationsSchema.params>;
+type GetMedicationsQuery = z.infer<typeof getMedicationsSchema.query>;
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -238,7 +230,7 @@ app.post('/api/sign-in', async (req, res, next) => {
 app.post(
   '/api/medications',
   authMiddleware,
-  validationMiddleware(medicationSchema),
+  validationMiddleware(addMedicationSchema),
   async (req, res, next) => {
     try {
       const {
@@ -280,20 +272,32 @@ app.post(
 
 // Get the medications of a user
 app.get(
-  '/api/medications/:patientId',
+  '/api/medications/:userId',
   authMiddleware,
+  validationMiddleware(getMedicationsSchema),
   async (req, res, next) => {
     try {
-      const { patientId } = req.params;
-      if (!patientId) throw new ClientError(400, 'UserId required');
-      const sql = `
+      const { userId } = req.params;
+      const { name, form } = req.query;
+      const queryValues = [userId];
+      let sql = `
       select *
         from "medications"
-        where "userId" = $1;
-    `;
-      const result = await db.query<Medication>(sql, [patientId]);
+        where "userId" = $1
+      `;
+      const nameStr = name as string | undefined;
+      const formStr = form as string | undefined;
+      if (nameStr) {
+        queryValues.push(nameStr);
+        sql += ` and name = $${queryValues.length}`;
+      }
+      if (formStr) {
+        queryValues.push(formStr);
+        sql += ` and form = $${queryValues.length}`;
+      }
+      const result = await db.query<Medication>(sql, queryValues);
       const medications = result.rows;
-      res.json(medications);
+      res.status(200).json(medications);
     } catch (err) {
       next(err);
     }
@@ -307,7 +311,6 @@ app.post(
   validationMiddleware(scheduleInputSchema),
   async (req, res, next) => {
     try {
-      // validateSchedule(req.body);
       const {
         medicationId,
         timesPerDay,
