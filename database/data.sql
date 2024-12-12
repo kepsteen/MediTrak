@@ -4,10 +4,10 @@
 -- EXAMPLE:
 
 insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-  values ('patient', '$argon2id$v=19$m=65536,t=3,p=4$09z0xFl8vOK1bXwAwAUlfQ$yqnmj+WFQ0BPctyis3bboMm1nVNMa+Rw+2OgNmjCE0A', 'Patient', 'Patient One', '03/15/1997', '9499222057', true);
+  values ('JaneDoe39', '$argon2id$v=19$m=65536,t=3,p=4$09z0xFl8vOK1bXwAwAUlfQ$yqnmj+WFQ0BPctyis3bboMm1nVNMa+Rw+2OgNmjCE0A', 'Patient', 'Jane Doe', '03/15/1997', '9499222057', true);
 
 insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
-  values ('caregiver', '$argon2id$v=19$m=65536,t=3,p=4$09z0xFl8vOK1bXwAwAUlfQ$yqnmj+WFQ0BPctyis3bboMm1nVNMa+Rw+2OgNmjCE0A', 'Caregiver', 'Caregiver One', '03/15/1997', '9499222057', true);
+  values ('JohnDoe77', '$argon2id$v=19$m=65536,t=3,p=4$09z0xFl8vOK1bXwAwAUlfQ$yqnmj+WFQ0BPctyis3bboMm1nVNMa+Rw+2OgNmjCE0A', 'Caregiver', 'John Doe', '03/15/1997', '9499222057', true);
 
 insert into "users" ("username", "hashedPassword", "role", "fullName", "dateOfBirth", "phoneNumber", "notificationsEnabled")
   values ('patient2', '$argon2id$v=19$m=65536,t=3,p=4$6MeIFikxuRTxoEhixGGNVg$0CYkAeAu2KRdxbOrMIXAezn0T8/kmyjJA0L9eLZEwUg', 'Patient', 'Patient Two', '03/15/1997', '9499222057', true);
