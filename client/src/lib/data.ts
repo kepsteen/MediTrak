@@ -106,6 +106,17 @@ type SimpleUser = {
   password: string;
 };
 
+export type Interaction = {
+  medications: string[];
+  severity: string;
+  effect: string;
+};
+
+type InteractionResponse = {
+  hasInteractions: boolean;
+  interactions: Interaction[];
+};
+
 const days = [
   'Sunday',
   'Monday',
@@ -290,6 +301,27 @@ export async function fetchMedications(patientId: string) {
   if (!response.ok) throw new Error(`Response status: ${response.status}`);
   const medications = (await response.json()) as Medication[];
   return medications;
+}
+
+/**
+ *
+ * @param medications
+ * @throws error if response is not ok
+ * @returns
+ */
+export async function checkInteractions(medications: Medication[]) {
+  const token = readToken();
+  const response = await fetch('/api/interactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(medications),
+  });
+  if (!response.ok) throw new Error(`Response status: ${response.status}`);
+  const interactions = (await response.json()) as InteractionResponse;
+  return interactions;
 }
 
 /**
