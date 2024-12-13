@@ -1,5 +1,7 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a id="readme-top"></a>
+
 <!--
 *** Thanks for checking out the Best-README-Template. If you have a suggestion
 *** that would make this better, please fork the repo and create a pull request
@@ -7,8 +9,6 @@
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
 -->
-
-
 
 <!-- PROJECT SHIELDS -->
 <!--
@@ -18,9 +18,8 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+
 [![LinkedIn][linkedin-shield]][linkedin-url]
-
-
 
 <!-- PROJECT LOGO -->
 <br />
@@ -41,8 +40,6 @@
     <a href="https://github.com/kepsteen/MediTrak/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -68,11 +65,9 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
-## About The Project
 
+## About The Project
 
 https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 
@@ -80,44 +75,41 @@ https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 
 <p>As a certified nursing assistant who worked on the frontlines during the pandemic, I gained valuable insights into the healthcare system. I wanted to leverage the skills I had acquired in the inpatient setting to create a meaningful project. The idea came to me after hearing about my mother's struggles to manage my ill grandfather's 20+ medications while living across the country. She diligently maintained countless spreadsheets, updating them each time his medication changed. Hearing about this and numerous incidents where home health nurses had made mistakes dispensing his medication due to not having access to up-to-date information inspired me to build an application to solve these issues. The app would serve patients like my grandfather and caregivers like my mother, providing an accessible solution for medication management.</p>
 
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Stack
 
-* [![React][React.js]][React-url]
-* [![TypeScript][TypeScript.com]][TypeScript-url]
-* [![Node][NodeJS.com]][NodeJS-url]
-* [![Express][Express.js.com]][Express.js-url]
-* [![PostgreSQL][Postgres.com]][Postgres-url]
+- [![React][React.js]][React-url]
+- [![TypeScript][TypeScript.com]][TypeScript-url]
+- [![Node][NodeJS.com]][NodeJS-url]
+- [![Express][Express.js.com]][Express.js-url]
+- [![PostgreSQL][Postgres.com]][Postgres-url]
 
 ### Packages
-* Shadcn UI Components
-* React-pdf
-* React-hook-form
-* zod - validation
-* twilio
+
+- Shadcn UI Components
+- React-pdf
+- React-hook-form
+- zod - validation
+- twilio
 
 <!-- ROADMAP -->
+
 ## Features
 
 - Users can register for an account and sign in
 - Users can add medications to their list
+- Users can view medication interactions
 - Users can view their medicaitons List
 - Users can schedule medications
 - Caregivers can request access to patient accounts
 - Users can download a pdf of their medication List
 - Users can sign up for text message notifications when a medication runs out
 
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### Challenges
+
 <p>Developing MediTrak in just three weeks posed numerous challenges, from planning and designing to building and deploying. I hoped to streamline this process by using the Shadcn ui library, but this decision brought its own hurdles. While Shadcn allows for easy copy-pasting of components into the codebase, modifying their functionality to fit my use cases proved difficult, requiring frequent referral to the Shadcn and Radix documentation.</p>
 <p>The most persistent issue arose while developing the medication schedules feature. When users add medications to their list, they are prompted to schedule each medication in the schedule tab consecutively. However, if a user moved too quickly between medications, a flush resync error would be thrown by the Radix UI checkboxes in the form. Despite thoroughly examining the documentation and researching similar issues faced by other users, I found no solutions that wouldn't compromise the user experience. I determined that the ongoing process needed about four seconds to complete when the component re-rendered. To address this, I implemented a four-second progress bar that appears after each form submission, allowing the process to finish before the user proceeds.
 </p>
@@ -125,16 +117,15 @@ https://github.com/user-attachments/assets/5df9b247-0fcb-414b-a628-23058aac6a69
 </br>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 To get a local copy up and running follow these simple example steps.
 
-
 ### Installation
-1. Get a free API Key from Twilio for text notifications https://www.twilio.com/docs 
+
+1. Get a free API Key from Twilio for text notifications https://www.twilio.com/docs
 2. Clone the repo
    ```sh
    git clone https://github.com/kepsteen/MediTrak
@@ -160,24 +151,18 @@ To get a local copy up and running follow these simple example steps.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-
-
-
-
 <!-- CONTACT -->
+
 ## Contact
 
 <p> Email - codyepstein@gmail.com</p>
 <a href="https://www.linkedin.com/in/cody-epstein">LinkedIn</a>
 
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
 [contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
@@ -206,7 +191,7 @@ To get a local copy up and running follow these simple example steps.
 [Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+[JQuery-url]: https://jquery.com
 [Postgres.com]: https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white
 [Postgres-url]: https://www.postgresql.org/
 [NodeJS.com]: https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white
