@@ -14,7 +14,8 @@ export function DownloadButton({ medications }: Props) {
    * Creates and downloads a pdf from a react component
    */
   async function downloadPdf() {
-    const fileName = 'MedicationList.pdf';
+    const fileName =
+      'MedicationList-' + new Date().toLocaleDateString() + '.pdf';
     // pdf method takes react component as an argument and returns a pdf
     // toBlob method converts pdf to a blob which allows for a browser flexible
     // and efficient way to transfer potentially large amounts of data
