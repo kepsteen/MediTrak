@@ -105,6 +105,7 @@ type MedicationUser = {
 type GetMedicationsParams = z.infer<typeof getMedicationsSchema.params>;
 type GetMedicationsQuery = z.infer<typeof getMedicationsSchema.query>;
 
+// Initialize Twilio client
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
