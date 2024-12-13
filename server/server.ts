@@ -729,6 +729,49 @@ app.put(
   }
 );
 
+app.post('/api/interactions', authMiddleware, async (req, res, next) => {
+  try {
+    const medications = req.body;
+    let medicationList = '';
+    medications.forEach((medication: Medication) => {
+      medicationList += medication.name + ', ';
+    });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a medication interaction checker. Respond with a JSON object in this exact format:
+
+{
+  "hasInteractions": boolean,
+  "interactions": [
+    {
+      "medications": ["Drug 1", "Drug 2"],
+      "severity": "Mild" | "Moderate" | "Severe",
+      "effect": "Description of the interaction"
+    }
+  ]
+}
+
+If no interactions are found, return an empty interactions array. Only include these exact fields with no additional information. Sort the interactions array by decreasingseverity.`,
+        },
+        {
+          role: 'user',
+          content: `Check for interactions between these medications: ${medicationList}`,
+        },
+      ],
+    });
+    const responseContent = JSON.parse(
+      completion.choices[0].message.content as string
+    );
+    res.status(200).json(responseContent);
+  } catch (err) {
+    next(err);
+  }
+});
+
 /*
  * Handles paths that aren't handled by any other route handler.
  * It responds with `index.html` to support page refreshes with React Router.
