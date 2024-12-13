@@ -22,7 +22,22 @@ import {
 import { Textarea } from './ui/textarea';
 import { useToast } from './ui/use-toast';
 import { useNavigate } from 'react-router';
-import { addMedication, medNames } from '@/lib/data';
+import {
+  addMedication,
+  checkInteractions,
+  fetchMedications,
+  Interaction,
+  medNames,
+} from '@/lib/data';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 const formSchema = z
   .object({
@@ -64,6 +79,10 @@ type Props = {
 };
 
 export function AddMedForm({ patientId }: Props) {
+  const [hasInteractions, setHasInteractions] = useState(false);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [isPending, setIsPending] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -227,10 +246,58 @@ export function AddMedForm({ patientId }: Props) {
             )}
           />
           <Button type="submit" className="col-span-2">
-            Submit
+            {isPending ? 'Checking Interactions...' : 'Submit'}
           </Button>
         </form>
       </Form>
+      <Dialog
+        open={hasInteractions}
+        onOpenChange={() => {
+          setHasInteractions(false);
+          navigate('/medications');
+        }}>
+        <DialogContent className="max-h-[60vh] overflow-scroll">
+          <DialogHeader>
+            <DialogTitle>
+              <span className="text-red-500">WARNING:</span> Medication
+              Interactions Found
+            </DialogTitle>
+            <DialogDescription>
+              Some of your medications may interact with each other. Please
+              consult your doctor before taking any of these medications.
+            </DialogDescription>
+          </DialogHeader>
+          <section>
+            {interactions.map((interaction, index) => (
+              <div
+                className={cn(
+                  `p-4 my-4 border-2 rounded-md`,
+                  interaction.severity === 'Severe' && 'border-red-500',
+                  interaction.severity === 'Moderate' && 'border-yellow-500',
+                  interaction.severity === 'Mild' && 'border-gray-500'
+                )}
+                key={interaction.medications.join(',') + index}>
+                <p>
+                  <span className="font-bold">Medications: </span>
+                  {interaction.medications.join(' + ')}
+                </p>
+                <p
+                  className={cn(
+                    interaction.severity === 'Severe' && 'text-red-500',
+                    interaction.severity === 'Moderate' && 'text-yellow-500'
+                  )}>
+                  <span className="font-bold text-black">Severity: </span>
+                  {interaction.severity}
+                </p>
+                <p>
+                  <span className="font-bold">Effect: </span>
+                  {interaction.effect}
+                </p>
+              </div>
+            ))}
+          </section>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

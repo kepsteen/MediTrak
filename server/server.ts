@@ -14,6 +14,7 @@ import {
   userSchema,
 } from './lib/schemas.js';
 import { z } from 'zod';
+import OpenAI from 'openai';
 
 type Medication = {
   medicationId: number;
@@ -123,6 +124,9 @@ async function createMessage(
     to: `+1${phoneNumber}`,
   });
 }
+
+// Initialize OpenAI client
+const openai = new OpenAI();
 
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
