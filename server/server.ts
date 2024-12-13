@@ -14,6 +14,7 @@ import {
   userSchema,
 } from './lib/schemas.js';
 import { z } from 'zod';
+import OpenAI from 'openai';
 
 type Medication = {
   medicationId: number;
@@ -104,6 +105,7 @@ type MedicationUser = {
 type GetMedicationsParams = z.infer<typeof getMedicationsSchema.params>;
 type GetMedicationsQuery = z.infer<typeof getMedicationsSchema.query>;
 
+// Initialize Twilio client
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
@@ -123,6 +125,9 @@ async function createMessage(
     to: `+1${phoneNumber}`,
   });
 }
+
+// Initialize OpenAI client
+const openai = new OpenAI();
 
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -724,6 +729,49 @@ app.put(
     }
   }
 );
+
+app.post('/api/interactions', authMiddleware, async (req, res, next) => {
+  try {
+    const medications = req.body;
+    let medicationList = '';
+    medications.forEach((medication: Medication) => {
+      medicationList += medication.name + ', ';
+    });
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a medication interaction checker. Respond with a JSON object in this exact format:
+
+{
+  "hasInteractions": boolean,
+  "interactions": [
+    {
+      "medications": ["Drug 1", "Drug 2"],
+      "severity": "Mild" | "Moderate" | "Severe",
+      "effect": "Description of the interaction"
+    }
+  ]
+}
+
+If no interactions are found, return an empty interactions array. Only include these exact fields with no additional information. Sort the interactions array by decreasingseverity.`,
+        },
+        {
+          role: 'user',
+          content: `Check for interactions between these medications: ${medicationList}`,
+        },
+      ],
+    });
+    const responseContent = JSON.parse(
+      completion.choices[0].message.content as string
+    );
+    res.status(200).json(responseContent);
+  } catch (err) {
+    next(err);
+  }
+});
 
 /*
  * Handles paths that aren't handled by any other route handler.

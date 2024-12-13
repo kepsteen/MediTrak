@@ -25,6 +25,22 @@ export function SignInForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const handleGuestLogin = async (guestType: 'patient' | 'caregiver') => {
+    const username = guestType === 'patient' ? 'JaneDoe39' : 'JohnDoe77';
+    const password = 'Password1!';
+
+    try {
+      const authData = await validateUserCredentials({ username, password });
+      handleSignIn(authData.user, authData.token);
+      toast({
+        title: `Guest ${guestType} successfully logged in.`,
+      });
+      navigate('/medications');
+    } catch (error) {
+      setError(`${error}`);
+    }
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
@@ -44,18 +60,10 @@ export function SignInForm() {
       <section className="container h-screen flex justify-center items-center pt-[110px]">
         <div>
           <div className="flex justify-between mb-4">
-            <Button
-              onClick={() => {
-                setUserName('patient');
-                setPassword('Password1!');
-              }}>
+            <Button onClick={() => handleGuestLogin('patient')}>
               Guest - Patient
             </Button>
-            <Button
-              onClick={() => {
-                setUserName('caregiver');
-                setPassword('Password1!');
-              }}>
+            <Button onClick={() => handleGuestLogin('caregiver')}>
               Guest - Caregiver
             </Button>
           </div>
